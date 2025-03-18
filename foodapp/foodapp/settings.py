@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'kitchen',
+    'admin_panel',
+    'userapp',
 ]
 
 MIDDLEWARE = [
