@@ -1,4 +1,11 @@
 /server
 *.sqlite3
+
+# Ignore Python bytecode
 **/__pycache__/
+
+# Ignore Django migrations except __init__.py
+**/migrations/*.py
+!**/migrations/__init__.py
+
 foodapp/__pycache__
