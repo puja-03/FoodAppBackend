@@ -2,7 +2,7 @@ from django.db import models
 from userapp.models import *
 
 class Owner(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     business_name = models.CharField(max_length=255)
     gst_number = models.CharField(max_length=50, unique=True)
     address = models.TextField()
