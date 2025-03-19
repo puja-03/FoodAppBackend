@@ -1,8 +1,8 @@
 from django.db import models
-from django.contrib.auth.models import User
+from userapp.models import *
 
 class Owner(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     business_name = models.CharField(max_length=255)
     gst_number = models.CharField(max_length=50, unique=True)
     address = models.TextField()
