@@ -5,7 +5,9 @@ from .auth_serializer import *
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
-
+from django.utils.timezone import now
+from datetime import timedelta
+from .utils import *
 
 class RegisterUser(APIView):
     permission_classes = [AllowAny] 
@@ -19,8 +21,10 @@ class RegisterUser(APIView):
         serializer = UserSerializer(data=data)
         if serializer.is_valid():
             try:
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                user = serializer.save()
+                if not user.is_verified:
+                    otp = send_otp_email(user.email)
+                    return Response({"message": "Check your email to verify your account.", "user": serializer.data}, status=status.HTTP_201_CREATED)
             except Exception as e:
                 return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -35,6 +39,9 @@ class LoginUser(APIView):
             user = CustomUser.objects.get(email=email)
         except CustomUser.DoesNotExist:
             return Response({"error": "Invalid email or password"}, status=status.HTTP_400_BAD_REQUEST)
+        if not user.is_verified:
+            return Response({'message': 'Please verify your account before logging in.'},
+                            status=status.HTTP_403_FORBIDDEN)
         if not user.check_password(password):
             return Response({"error": "Invalid email or password"}, status=status.HTTP_400_BAD_REQUEST)
         refresh_token = RefreshToken.for_user(user)
@@ -46,5 +53,21 @@ class LoginUser(APIView):
             "refresh_token": str(refresh_token)
         })
 
-
-        
+class VerifyEmail(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request):
+        serializer = VerifyEmailSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        email = serializer.data['email']
+        otp = serializer.data['otp']
+        user = CustomUser.objects.filter(email=email).first()
+        if user.is_verified:
+            return Response({"error": "Email already verified"}, status=status.HTTP_400_BAD_REQUEST)
+        if not user or user.otp != otp:
+            return Response({"error": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
+        if now() > user.otp_created_at + timedelta(minutes=30):
+            return Response({"error": "OTP expired"}, status=status.HTTP_400_BAD_REQUEST)
+        user.is_verified = True
+        user.save()
+        return Response({"message": "Email verified successfully"}, status=status.HTTP_200_OK)
