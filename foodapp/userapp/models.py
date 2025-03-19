@@ -24,6 +24,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         ('delivery_boy','Delivery_boy'),
         ('owner', 'Owner')
     ]
+    name = models.CharField(max_length=255, null=True, blank=True)
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=255, unique=True, default='user')
     is_staff = models.BooleanField(default=False)
@@ -31,7 +32,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_verified = models.BooleanField(default=False)
     otp = models.CharField(max_length=8, null=True, blank=True)
     otp_created_at = models.DateTimeField(null=True,blank=True)
-    role = models.CharField(max_length=50, choices=ROLE_CHOICES)
+    role = models.CharField(max_length=50, choices=ROLE_CHOICES, default='customer')
 
     groups = models.ManyToManyField(
         "auth.Group",
@@ -55,8 +56,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def is_complete(self):
         required_fields = {
             "email": self.email,
-            "username": self.username
-
+            "username": self.username,
+            "name": self.name
         }
         missing_fields = [field for field, value in required_fields.items() if not value]
         return not missing_fields, missing_fields
