@@ -1,10 +1,11 @@
 
 from django.contrib import admin
 from django.urls import path, include
-from .views import home_page
+from foodapp.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("home/", home_page),
     path('api/', include('kitchen.urls')),
+    path('api/user/', include('userapp.urls')),
 ]
