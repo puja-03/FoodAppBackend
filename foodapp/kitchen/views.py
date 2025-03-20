@@ -15,3 +15,8 @@ class KitchenViewSet(viewsets.ModelViewSet):
     serializer_class = KitchenSerializer
     queryset= Kitchen.objects.all()
 
+class BankViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = BankSerializer
+    queryset = Bank.objects.all()
+
