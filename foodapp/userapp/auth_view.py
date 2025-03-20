@@ -46,11 +46,15 @@ class LoginUser(APIView):
             return Response({"error": "Invalid email or password"}, status=status.HTTP_400_BAD_REQUEST)
         refresh_token = RefreshToken.for_user(user)
         return Response({
-            "email": user.email,
-            "username": user.username,
-            "role": user.role,
+            "message": "Login successful",
             "access_token": str(refresh_token.access_token),
-            "refresh_token": str(refresh_token)
+            "refresh_token": str(refresh_token),
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "username": user.username,
+                "role": user.role,
+            }
         })
 
 class VerifyEmail(APIView):
@@ -66,7 +70,7 @@ class VerifyEmail(APIView):
             return Response({"error": "Email already verified"}, status=status.HTTP_400_BAD_REQUEST)
         if not user or user.otp != otp:
             return Response({"error": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
-        if now() > user.otp_created_at + timedelta(minutes=30):
+        if now() > user.otp_created_at + timedelta(minutes=10):
             return Response({"error": "OTP expired"}, status=status.HTTP_400_BAD_REQUEST)
         user.is_verified = True
         user.save()
