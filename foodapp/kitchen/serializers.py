@@ -10,3 +10,8 @@ class KitchenSerializer(serializers.ModelSerializer):
     class Meta:
         model = Kitchen
         fields = "__all__"
+
+class BankSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bank
+        fields = "__all__"
