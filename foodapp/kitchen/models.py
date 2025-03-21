@@ -36,7 +36,7 @@ class Kitchen(models.Model):
         return f"{self.name} ({self.owner.business_name})"
     
 class Bank(models.Model):
-    kitchen = models.OneToOneField(Kitchen, on_delete=models.PROTECT)  # Prevent deletion
+    kitchen = models.OneToOneField(Kitchen, on_delete=models.PROTECT)
     bank_name = models.CharField(max_length=255)
     account_holder_name = models.CharField(max_length=255)
     account_number = models.CharField(max_length=50, unique=True, validators=[validate_account_number])
