@@ -12,7 +12,9 @@ router = routers.DefaultRouter()
 urlpatterns = [
     path('register/<str:role>/', RegisterUser.as_view()),
     path('login/', LoginUser.as_view()),
+    path('logout/', LogoutUser.as_view()),
     path('verifyemail/', VerifyEmail.as_view()),
     path('adminview/', AdminView.as_view(), name='adminview'),
     path('ownerview/', OwnerView.as_view(), name='ownerview'),
+
 ]
