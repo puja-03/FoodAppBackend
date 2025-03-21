@@ -10,6 +10,7 @@ router = routers.DefaultRouter()
 
 
 urlpatterns = [
+    path('', include(router.urls)),
     path('register/<str:role>/', RegisterUser.as_view()),
     path('login/', LoginUser.as_view()),
     path('logout/', LogoutUser.as_view()),
