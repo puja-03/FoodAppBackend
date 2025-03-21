@@ -1,3 +1,16 @@
 from django.contrib import admin
+from .models import *
 
-# Register your models here.
+@admin.register(Owner)
+class OwnerAdmin(admin.ModelAdmin):
+    list_display = ('business_name', 'address', 'pincode','user', 'city', 'state', 'gst_number', 'profile_image')
+
+@admin.register(Kitchen)
+class KitchenAdmin(admin.ModelAdmin):
+    list_display = ('name', 'owner','description','address', 'city', 'state','pincode' ,'logo','cover_image','status')
+
+@admin.register(Bank)
+class BankAdmin(admin.ModelAdmin):
+    list_display = ('kitchen', 'bank_name', 'account_holder_name', 'account_number', 'ifsc_code', 'upi_id')
+
+
