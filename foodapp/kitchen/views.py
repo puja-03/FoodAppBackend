@@ -27,6 +27,13 @@ class BankViewSet(viewsets.ModelViewSet):
             {"error": "Delete operation is not allowed on Bank details."}, 
             status=status.HTTP_405_METHOD_NOT_ALLOWED
         )
+    
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        return Response(
+            {"message": "Bank details updated successfully", "data": response.data},
+            status=status.HTTP_200_OK
+        )
 
     
 
