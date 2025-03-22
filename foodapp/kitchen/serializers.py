@@ -7,6 +7,7 @@ class OwnerSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class KitchenSerializer(serializers.ModelSerializer):
+    owner = serializers.PrimaryKeyRelatedField(queryset=Owner.objects.all()) 
     class Meta:
         model = Kitchen
         fields = "__all__"
