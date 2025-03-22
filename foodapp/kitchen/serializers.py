@@ -26,6 +26,15 @@ class KitchenSerializer(serializers.ModelSerializer):
         model = Kitchen
         fields = "__all__"
 
+    # def to_representation(self, instance):
+    #     representation = super().to_representation(instance)
+    #     representation['owner'] = OwnerSerializer(instance.owner).data
+    #     return representation
+    
+    def validate(self, data):
+        if Kitchen.objects.filter(owner=data['owner'], name=data['name'], address=data['address']).exists():
+            raise serializers.ValidationError("A kitchen with this name and address already exists for this owner.")
+        return data
 class BankSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bank

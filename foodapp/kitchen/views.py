@@ -39,12 +39,19 @@ class KitchenViewSet(viewsets.ModelViewSet):
     serializer_class = KitchenSerializer
     queryset= Kitchen.objects.all()
 
+    
     def create(self, request, *args, **kwargs):
-        response = super().create(request, *args, **kwargs)
-        return Response(
-            {"message": "Kitchen created successfully", "data": response.data},
-            status=status.HTTP_201_CREATED
-        )
+        owner = request.data.get("owner")
+        name = request.data.get("name")
+        address = request.data.get("address")
+
+        if Kitchen.objects.filter(owner=owner, name=name, address=address).exists():
+            return Response(
+                {"error": "A kitchen with this name and address already exists for this owner."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        return super().create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         response = super().update(request, *args, **kwargs)
@@ -59,7 +66,6 @@ class KitchenViewSet(viewsets.ModelViewSet):
             {"message": "Kitchen deleted successfully"},
             status=status.HTTP_200_OK
         )
-
 class BankViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = BankSerializer
