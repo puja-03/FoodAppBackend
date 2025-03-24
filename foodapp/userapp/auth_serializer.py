@@ -5,7 +5,7 @@ import random
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'name', 'role', 'is_active', 'is_verified', 'password']
+        fields = ['username', 'email', 'name', 'role', 'is_active', 'is_verified','phone_number', 'password']
         extra_kwargs = {
             "password": {'write_only': True},
             "email": {'required': True},
@@ -32,7 +32,7 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password']) 
         user.save()
         return user
-    
+        
 # otp verify email serializer
 class VerifyEmailSerializer(serializers.Serializer):
     email = serializers.EmailField()

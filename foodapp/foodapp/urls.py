@@ -8,4 +8,5 @@ urlpatterns = [
     path("home/", home_page),
     path('api/', include('kitchen.urls')),
     path('api/user/', include('userapp.urls')),
+    path('api/customer/', include('customer.urls')),
 ]
