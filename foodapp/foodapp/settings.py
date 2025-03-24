@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'kitchen',
     'admin_panel',
     'userapp',
+    'Delivery_panel',
 ]
 
 REST_FRAMEWORK = {
