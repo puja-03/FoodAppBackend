@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'admin_panel',
     'userapp',
     'customer',
+    'Delivery_panel',
 ]
 
 REST_FRAMEWORK = {
