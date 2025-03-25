@@ -1,6 +1,7 @@
 from django.db import models
 from userapp.models import *
 from kitchen.models import *
+import os
 
 # Create your models here.
 # Customer Model
@@ -15,6 +16,14 @@ class Customer(models.Model):
 
     def __str__(self):
         return self.user.username
+    
+    def save(self, *args, **kwargs):
+        if self.pk:
+            old_image = Customer.objects.filter(pk=self.pk).first()
+            if old_image and old_image.profile_image != self.profile_image:
+                if old_image.profile_image and os.path.isfile(old_image.profile_image.path):
+                    os.remove(old_image.profile_image.path)
+        super(Customer, self).save(*args, **kwargs)
     
 # Customer Order Model
 class CustomerOrder(models.Model):

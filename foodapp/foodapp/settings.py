@@ -48,10 +48,10 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     "rest_framework_simplejwt.token_blacklist",
     'corsheaders',
-    'kitchen',
-    'admin_panel',
     'userapp',
     'customer',
+    'kitchen',
+    'admin_panel',
     'Delivery_panel',
 ]
 
@@ -173,3 +173,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
