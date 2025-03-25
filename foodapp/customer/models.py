@@ -6,11 +6,11 @@ from kitchen.models import *
 # Customer Model
 class Customer(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    address = models.TextField()
-    city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100)
-    pincode = models.CharField(max_length=10)
-    profile_image = models.ImageField(upload_to='profiles/', null=True, blank=True)
+    address = models.TextField(null=True, blank=True)
+    city = models.CharField(max_length=100, null=True, blank=True)
+    state = models.CharField(max_length=100, null=True, blank=True)
+    pincode = models.CharField(max_length=10, null=True, blank=True)
+    profile_image = models.ImageField(upload_to='customer-profiles/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
