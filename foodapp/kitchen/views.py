@@ -83,6 +83,14 @@ class BankViewSet(viewsets.ModelViewSet):
             {"message": "Bank details updated successfully", "data": response.data},
             status=status.HTTP_200_OK
         )
+    
+class MenuViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = MenuSerializer
+    queryset = Menu.objects.all()
+
+    
+        
 
     
 

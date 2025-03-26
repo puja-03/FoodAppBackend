@@ -12,5 +12,7 @@ class KitchenAdmin(admin.ModelAdmin):
 @admin.register(Bank)
 class BankAdmin(admin.ModelAdmin):
     list_display = ('kitchen', 'bank_name', 'account_holder_name', 'account_number', 'ifsc_code', 'upi_id')
-
+@admin.register(Menu)
+class MenuAdmin(admin.ModelAdmin):
+    list_display = ('Item_name', 'Category', 'Image', 'Description','Prep_Time')
 

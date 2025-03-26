@@ -45,4 +45,18 @@ class Bank(models.Model):
 
     def __str__(self):
         return f"Bank Details of {self.kitchen.name}"
+    
+class Menu(models.Model):
+    Item_name = models.CharField(max_length=200)
+    Prep_Time = models.TimeField()
+    Category = models.CharField(max_length=200)
+    Description = models.CharField(max_length=200)
+    Image = models.ImageField(upload_to='kitchens/Images/', null=True, blank=True)
+
+
+
+
+
+
+
 

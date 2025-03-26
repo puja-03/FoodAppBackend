@@ -6,6 +6,7 @@ router = routers.DefaultRouter()
 router.register(r'owner', OwnerViewSet)
 router.register(r'kitchen', KitchenViewSet)
 router.register(r'bank', BankViewSet)
+router.register(r'menu', MenuViewSet)
 
 urlpatterns = [
     path('', include(router.urls))

@@ -39,3 +39,8 @@ class BankSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bank
         fields = "__all__"
+
+class MenuSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Menu
+        fields = "__all__"
