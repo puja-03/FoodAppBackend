@@ -66,6 +66,8 @@ class VerifyEmail(APIView):
         email = serializer.data['email']
         otp = serializer.data['otp']
         user = CustomUser.objects.filter(email=email).first()
+        if user is None:
+            return Response({"error": "Invalid email"}, status=status.HTTP_400_BAD_REQUEST)
         if user.is_verified:
             return Response({"error": "Email already verified"}, status=status.HTTP_400_BAD_REQUEST)
         if not user or user.otp != otp:
