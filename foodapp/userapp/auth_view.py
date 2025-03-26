@@ -66,15 +66,29 @@ class VerifyEmail(APIView):
         email = serializer.data['email']
         otp = serializer.data['otp']
         user = CustomUser.objects.filter(email=email).first()
+        if user is None:
+            return Response({"error": "Invalid email"}, status=status.HTTP_400_BAD_REQUEST)
         if user.is_verified:
             return Response({"error": "Email already verified"}, status=status.HTTP_400_BAD_REQUEST)
         if not user or user.otp != otp:
             return Response({"error": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
         if now() > user.otp_created_at + timedelta(minutes=10):
             return Response({"error": "OTP expired"}, status=status.HTTP_400_BAD_REQUEST)
+        refresh_token = RefreshToken.for_user(user)
+
         user.is_verified = True
         user.save()
-        return Response({"message": "Email verified successfully"}, status=status.HTTP_200_OK)
+        return Response({
+            "message": "Email verified successfully",
+            "access_token": str(refresh_token.access_token),
+            "refresh_token": str(refresh_token),
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "username": user.username,
+                "role": user.role,
+            }
+            })
     
 
 class LogoutUser(APIView):
