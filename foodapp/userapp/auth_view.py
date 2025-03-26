@@ -72,9 +72,21 @@ class VerifyEmail(APIView):
             return Response({"error": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
         if now() > user.otp_created_at + timedelta(minutes=10):
             return Response({"error": "OTP expired"}, status=status.HTTP_400_BAD_REQUEST)
+        refresh_token = RefreshToken.for_user(user)
+
         user.is_verified = True
         user.save()
-        return Response({"message": "Email verified successfully"}, status=status.HTTP_200_OK)
+        return Response({
+            "message": "Email verified successfully",
+            "access_token": str(refresh_token.access_token),
+            "refresh_token": str(refresh_token),
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "username": user.username,
+                "role": user.role,
+            }
+            })
     
 
 class LogoutUser(APIView):
