@@ -16,3 +16,7 @@ class BankAdmin(admin.ModelAdmin):
 class MenuAdmin(admin.ModelAdmin):
     list_display = ('Item_name', 'Category', 'Image', 'Description','Prep_Time')
 
+@admin.register(MenuQuantity)
+class MenuQuantity(admin.ModelAdmin):
+    list_display = ("menu_id", "quantity", 'quantity_type' ,'price')
+
