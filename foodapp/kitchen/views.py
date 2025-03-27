@@ -89,6 +89,10 @@ class MenuViewSet(viewsets.ModelViewSet):
     serializer_class = MenuSerializer
     queryset = Menu.objects.all()
 
+class MenuQuantityViewSet(viewsets.ModelViewSet):
+    parmission_classes = [IsAuthenticated]
+    serializer_class = MenuQuantitySerializer
+    queryset = MenuQuantity.objects.all()
     
         
 

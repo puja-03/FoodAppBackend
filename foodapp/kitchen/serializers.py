@@ -44,3 +44,8 @@ class MenuSerializer(serializers.ModelSerializer):
     class Meta:
         model = Menu
         fields = "__all__"
+
+class MenuQuantitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MenuQuantity
+        fields = "__all__"
