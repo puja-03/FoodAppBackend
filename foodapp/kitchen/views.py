@@ -89,6 +89,16 @@ class MenuViewSet(viewsets.ModelViewSet):
     serializer_class = MenuSerializer
     queryset = Menu.objects.all()
 
+    def get_queryset(self):
+        queryset = Menu.objects.all()
+        category_id = self.request.query_params.get('category', None)
+        
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)  # Filtering by category ID
+            
+        return queryset
+    
+
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
         return Response(
@@ -135,7 +145,13 @@ class CategoryViewSet(viewsets.ModelViewSet):
             {"message": "Category deleted successfully"},
             status=status.HTTP_200_OK
         )
-
+    def get_queryset(self):
+        queryset = Category.objects.all()
+        name = self.request.query_params.get('name', None)
+        if name:
+            queryset = queryset.filter(name__icontains=name)  # Case-insensitive search
+        return queryset
+    
 class MenuQuantityViewSet(viewsets.ModelViewSet):
     parmission_classes = [IsAuthenticated]
     serializer_class = MenuQuantitySerializer
