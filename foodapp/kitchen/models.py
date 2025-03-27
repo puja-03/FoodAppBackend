@@ -46,12 +46,22 @@ class Bank(models.Model):
     def __str__(self):
         return f"Bank Details of {self.kitchen.name}"
     
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+    
 class Menu(models.Model):
-    Item_name = models.CharField(max_length=200)
-    Prep_Time = models.TimeField()
-    Category = models.CharField(max_length=200)
-    Description = models.CharField(max_length=200)
+    kitchen = models.ForeignKey(Kitchen, on_delete=models.CASCADE)
+    item_name = models.CharField(max_length=200)
+    prep_Time = models.TimeField()
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    description = models.CharField(max_length=200)
     Image = models.ImageField(upload_to='kitchens/Images/', null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.item_name} ({self.kitchen.name})"
 
 class MenuQuantity(models.Model):
     menu_id = models.ForeignKey(Menu, on_delete=models.CASCADE)

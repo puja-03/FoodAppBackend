@@ -110,6 +110,32 @@ class MenuViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK
         )
 
+class CategoryViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CategorySerializer
+    queryset = Category.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        return Response(
+            {"message": "Category created successfully", "data": response.data},
+            status=status.HTTP_201_CREATED
+        )
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        return Response(
+            {"message": "Category updated successfully", "data": response.data},
+            status=status.HTTP_200_OK
+        )
+
+    def destroy(self, request, *args, **kwargs):
+        super().destroy(request, *args, **kwargs)
+        return Response(
+            {"message": "Category deleted successfully"},
+            status=status.HTTP_200_OK
+        )
+
 class MenuQuantityViewSet(viewsets.ModelViewSet):
     parmission_classes = [IsAuthenticated]
     serializer_class = MenuQuantitySerializer
