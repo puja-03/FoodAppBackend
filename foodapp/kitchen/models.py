@@ -57,15 +57,7 @@ class MenuQuantity(models.Model):
     menu_id = models.ForeignKey(Menu, on_delete=models.CASCADE)
     quantity = models.IntegerField()
     price = models.IntegerField()
-    quantity_type = models.CharField(
-        max_length=200,
-        choices=[
-            ('grams', 'Grams'),
-            ('liters', 'Liters'),
-            ('pieces', 'Pieces'),
-        ],
-        default='pieces'
-    )
+    quantity_type = models.CharField(max_length=200)
 
 
 
