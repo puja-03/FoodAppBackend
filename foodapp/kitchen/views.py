@@ -89,10 +89,54 @@ class MenuViewSet(viewsets.ModelViewSet):
     serializer_class = MenuSerializer
     queryset = Menu.objects.all()
 
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        return Response(
+            {"message": "Menu created successfully", "data": response.data},
+            status=status.HTTP_201_CREATED
+        )
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        return Response(
+            {"message": "Menu updated successfully", "data": response.data},
+            status=status.HTTP_200_OK
+        )
+
+    def destroy(self, request, *args, **kwargs):
+        super().destroy(request, *args, **kwargs)
+        return Response(
+            {"message": "Menu deleted successfully"},
+            status=status.HTTP_200_OK
+        )
+
 class MenuQuantityViewSet(viewsets.ModelViewSet):
     parmission_classes = [IsAuthenticated]
     serializer_class = MenuQuantitySerializer
     queryset = MenuQuantity.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        return Response(
+            {"message":"MenuQuantity created successfully", "data":response.data},
+            status=status.HTTP_201_CREATED
+        )
+    
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        return Response(
+            {"message": "Menuquantity updated successfully", "data": response.data},
+            status=status.HTTP_200_OK
+        )
+
+    def destroy(self, request, *args, **kwargs):
+        super().destroy(request, *args, **kwargs)
+        return Response(
+            {"message": "Menuquantity deleted successfully"},
+            status=status.HTTP_200_OK
+        )
+
+
     
         
 
