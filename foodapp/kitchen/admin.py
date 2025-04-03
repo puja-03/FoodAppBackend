@@ -14,7 +14,7 @@ class BankAdmin(admin.ModelAdmin):
     list_display = ('kitchen', 'bank_name', 'account_holder_name', 'account_number', 'ifsc_code', 'upi_id')
 @admin.register(Menu)
 class MenuAdmin(admin.ModelAdmin):
-    list_display = ('item_name', 'category', 'Image', 'description','prep_Time',)
+    list_display = ('item_name', 'category', 'Image', 'description','prep_Time','Isavailable')
 
 @admin.register(MenuQuantity)
 class MenuQuantity(admin.ModelAdmin):

@@ -55,6 +55,7 @@ class Category(models.Model):
 class Menu(models.Model):
     kitchen = models.ForeignKey(Kitchen, on_delete=models.CASCADE)
     item_name = models.CharField(max_length=200)
+    Isavailable = models.BooleanField()
     prep_Time = models.TimeField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     description = models.CharField(max_length=200)
