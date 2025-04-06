@@ -65,7 +65,7 @@ class Menu(models.Model):
         return f"{self.item_name} ({self.kitchen.name})"
 
 class MenuQuantity(models.Model):
-    menu_id = models.ForeignKey(Menu, on_delete=models.CASCADE)
+    menu = models.ForeignKey(Menu, on_delete=models.CASCADE, related_name='quantities')
     quantity = models.IntegerField()
     price = models.IntegerField()
     quantity_type = models.CharField(max_length=200)

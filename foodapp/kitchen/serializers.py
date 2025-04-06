@@ -40,17 +40,44 @@ class BankSerializer(serializers.ModelSerializer):
         model = Bank
         fields = "__all__"
 
+class MenuQuantitySerializer(serializers.ModelSerializer):
+    menu = serializers.IntegerField(source='menu.id', read_only=True)
+    class Meta:
+        model = MenuQuantity
+        fields = "__all__"
+
 class MenuSerializer(serializers.ModelSerializer):
+    quantities = MenuQuantitySerializer(many=True)
     class Meta:
         model = Menu
         fields = "__all__"
+
+    def create(self, validated_data):
+        quantities_data = validated_data.pop('quantities')
+        menu = Menu.objects.create(**validated_data)
+        for qty_data in quantities_data:
+            MenuQuantity.objects.create(menu=menu, **qty_data)
+        return menu
+
+    def update(self, instance, validated_data):
+        quantities_data = validated_data.pop('quantities', None)
+
+        # Update menu fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # If quantities provided, update them
+        if quantities_data is not None:
+            instance.quantities.all().delete()
+            for qty_data in quantities_data:
+                MenuQuantity.objects.create(menu=instance, **qty_data)
+
+        return instance
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = "__all__"
 
-class MenuQuantitySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MenuQuantity
-        fields = "__all__"
+

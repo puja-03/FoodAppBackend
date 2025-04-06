@@ -8,7 +8,7 @@ router.register(r'kitchen', KitchenViewSet)
 router.register(r'bank', BankViewSet)
 router.register(r'menu', MenuViewSet)
 router.register(r'category', CategoryViewSet)
-router.register(r'menuquantity', MenuQuantityViewSet)
+# router.register(r'menuquantity', MenuQuantityViewSet)
 
 urlpatterns = [
     path('', include(router.urls))
