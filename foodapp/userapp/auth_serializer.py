@@ -1,7 +1,10 @@
 from .models import *
 from rest_framework import serializers
 import random
+from django.contrib.auth import get_user_model
 
+
+CustomUser = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser

@@ -1,6 +1,7 @@
 from .models import *
 from rest_framework import serializers
 from userapp.auth_serializer import *
+from userapp.auth_serializer import UserSerializer
 
 class CustomerSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
@@ -25,9 +26,7 @@ class CustomerSerializer(serializers.ModelSerializer):
         return value
         
 
-from rest_framework import serializers
-from .models import Thali, CartItem, Order
-from userapp.serializers import UserSerializer
+
 
 class ThaliSerializer(serializers.ModelSerializer):
     class Meta:
