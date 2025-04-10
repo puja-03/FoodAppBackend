@@ -20,3 +20,11 @@ class MenuAdmin(admin.ModelAdmin):
 class MenuQuantity(admin.ModelAdmin):
     list_display = ("menu_id", "quantity", 'quantity_type' ,'price')
 
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
+@admin.register(Topping)
+class ToppingAdmin(admin.ModelAdmin):
+    list_display = ('name', 'description', 'image', 'created_at', 'updated_at')
+    

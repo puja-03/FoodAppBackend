@@ -2,7 +2,6 @@ from rest_framework import serializers
 from kitchen.models import *
 
 
-
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
@@ -79,5 +78,16 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = "__all__"
+
+class ToppingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Topping
+        fields = ['id', 'name', 'description', 'image', 'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at']
+
+    def validate_name(self, value):
+        if len(value.strip()) < 3:
+            raise serializers.ValidationError("Name must be at least 3 characters long")
+        return value.strip()
 
 

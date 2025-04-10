@@ -1,11 +1,13 @@
 from django.shortcuts import render
-from rest_framework import viewsets
-from kitchen.models import *
+from rest_framework import viewsets ,status
+from kitchen.models import * 
 from kitchen.serializers import *
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
 from rest_framework.response import Response
-
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import Topping
+from .serializers import ToppingSerializer
+import os
 
 # Create your views here.
 class OwnerViewSet(viewsets.ModelViewSet):
@@ -47,6 +49,7 @@ class KitchenViewSet(viewsets.ModelViewSet):
 
         if Kitchen.objects.filter(owner=owner, name=name, address=address).exists():
             return Response(
+
                 {"error": "A kitchen with this name and address already exists for this owner."},
                 status=status.HTTP_400_BAD_REQUEST
             )
@@ -129,11 +132,62 @@ class CategoryViewSet(viewsets.ModelViewSet):
         if name:
             queryset = queryset.filter(name__icontains=name)  # Case-insensitive search
         return queryset
-    
 
 
-    
+class ToppingViewSet(viewsets.ModelViewSet):
+    queryset = Topping.objects.all()
+    serializer_class = ToppingSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        # Check for duplicate name
+        name = request.data.get('name')
+        if Topping.objects.filter(name__iexact=name).exists():
+            return Response({
+                'error': 'A topping with this name already exists'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'message': 'Topping created successfully',
+                'data': serializer.data
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        name = request.data.get('name')
         
+        # Check for duplicate name only if name is being updated
+        if name and name.lower() != instance.name.lower():
+            if Topping.objects.filter(name__iexact=name).exists():
+                return Response({
+                    'error': 'A topping with this name already exists'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'message': 'Topping updated successfully',
+                'data': serializer.data
+            })
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        
+        # Delete the image file if it exists
+        if instance.image:
+            if os.path.isfile(instance.image.path):
+                os.remove(instance.image.path)
+                
+        instance.delete()
+        return Response({
+            'message': 'Topping deleted successfully'
+        }, status=status.HTTP_204_NO_CONTENT)
 
     
 

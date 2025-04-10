@@ -55,8 +55,9 @@ class Customer(models.Model):
 #         return f"{self.quantity}x {self.food_item.name} in Order {self.order.id}"
 # cart model
 class Thali(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
-    toppings = models.ManyToManyField(Category, blank=True)
+    toppings = models.ManyToManyField(Topping, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)  # Changed from FloatField for precision
     description = models.TextField()
     calories = models.IntegerField(null=True, blank=True)

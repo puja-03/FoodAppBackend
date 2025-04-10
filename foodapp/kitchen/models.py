@@ -1,7 +1,7 @@
 from django.db import models
 from userapp.models import *
 from django.core.exceptions import ValidationError
-
+import os
 def validate_account_number(value):
     """Ensures the account number contains only digits."""
     if not value.isdigit():
@@ -70,6 +70,27 @@ class MenuQuantity(models.Model):
     price = models.IntegerField()
     quantity_type = models.CharField(max_length=200)
 
+class Topping(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(null=True, blank=True)
+    image = models.ImageField(upload_to='topping_images/', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['name']
+
+    def save(self, *args, **kwargs):
+        # Delete old image if it's being updated
+        if self.pk:
+            old_topping = Topping.objects.filter(pk=self.pk).first()
+            if old_topping and old_topping.image != self.image:
+                if old_topping.image and os.path.isfile(old_topping.image.path):
+                    os.remove(old_topping.image.path)
+        super(Topping, self).save(*args, **kwargs)
 
 
 
