@@ -35,7 +35,7 @@ class Customer(models.Model):
 #         ('pending', 'Pending'),
 #         ('accepted', 'Accepted'),
 #         ('preparing', 'Preparing'),
-#         ('out_for_delivery', 'Out for Delivery'),
+#         ('out_for_delivery', 'Out for Delivery'), 
 #         ('delivered', 'Delivered'),
 #         ('cancelled', 'Cancelled')
 #     ])
@@ -54,21 +54,6 @@ class Customer(models.Model):
 #     def __str__(self):
 #         return f"{self.quantity}x {self.food_item.name} in Order {self.order.id}"
 # cart model
-class Thali(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
-    toppings = models.ManyToManyField(Topping, blank=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2)  # Changed from FloatField for precision
-    description = models.TextField()
-    calories = models.IntegerField(null=True, blank=True)
-    estimated_time = models.CharField(max_length=50, null=True, blank=True)
-    image = models.ImageField(upload_to='thali_images/', null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.name
-
 
 class CartItem(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
@@ -83,6 +68,7 @@ class CartItem(models.Model):
     def get_total_price(self):
         return self.quantity * self.thali.price
     
+
 class Order(models.Model):
     PAYMENT_CHOICES = (
         ('COD', 'Cash on Delivery'),
@@ -97,8 +83,9 @@ class Order(models.Model):
         ('DELIVERED', 'Delivered'),
         ('CANCELLED', 'Cancelled')
     )
-    
+
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='orders')
+    kitchen = models.ForeignKey(KitchenProfile, on_delete=models.CASCADE)
     cart_items = models.ManyToManyField(CartItem, related_name='order')
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES)
@@ -117,3 +104,14 @@ class Order(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+class Wishlist(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    thali = models.ForeignKey(Thali, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['user', 'thali']
+
+    def __str__(self):
+        return f"Wishlist item for {self.user.email}"

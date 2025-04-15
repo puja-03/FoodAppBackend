@@ -10,7 +10,6 @@ from rest_framework.routers import DefaultRouter
 router = routers.DefaultRouter()
 
 router.register('profile', CustomerViewSet)
-router.register(r'thalis', ThaliViewSet, basename='thali')
 router.register(r'cart', CartItemViewSet, basename='cart')
 router.register(r'orders', OrderViewSet, basename='order')
 

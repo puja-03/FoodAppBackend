@@ -7,16 +7,6 @@ class CustomerAdmin(admin.ModelAdmin):
     list_display = ['user', 'address', 'city', 'state', 'pincode', 'profile_image', 'created_at']
    
 
-@admin.register(Thali)
-class ThaliAdmin(admin.ModelAdmin):
-    list_display = ('name', 'price', 'get_toppings', 'calories', 'estimated_time', 'created_at')
-    filter_horizontal = ('toppings',)  # For better m2m field handling in edit form
-    search_fields = ('name', 'description')
-    list_filter = ('created_at', 'toppings')
-
-    def get_toppings(self, obj):
-        return ", ".join([topping.name for topping in obj.toppings.all()])
-    get_toppings.short_description = 'Toppings'
 @admin.register(CartItem)
 class CartItemAdmin(admin.ModelAdmin):
     list_display = ('id', 'get_user_email', 'get_thali_name', 'quantity', 'get_total_price')
@@ -71,3 +61,14 @@ class OrderAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         })
     )
+
+
+@admin.register(Wishlist)
+class WishlistAdmin(admin.ModelAdmin):
+    list_display = ('user', 'get_thali_name', 'created_at')
+    readonly_fields = ('created_at',)
+
+    def get_thali_name(self, obj):
+        return obj.thali.name
+    get_thali_name.short_description = 'Thali Name'
+

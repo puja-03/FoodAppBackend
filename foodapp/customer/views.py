@@ -85,66 +85,6 @@ class CustomerViewSet(viewsets.ModelViewSet):
         except Customer.DoesNotExist:
             return Response({"detail": "Profile not found."}, status=status.HTTP_404_NOT_FOUND)
         
-
-class ThaliViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
-    serializer_class = ThaliSerializer
-    queryset = Thali.objects.all()
-
-    def get_permissions(self):
-        """
-        Only admin users can create, update or delete thalis
-        Regular users can only view them
-        """
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            self.permission_classes = [IsAdminUser]
-        return super().get_permissions()
-
-    def get_queryset(self):
-        queryset = Thali.objects.all()
-        category = self.request.query_params.get('category', None)
-        if category:
-            queryset = queryset.filter(toppings__name=category)
-        return queryset
-
-    def update(self, request, *args, **kwargs):
-        thali = self.get_object()
-        data = request.data.copy()
-        
-        # Validate price changes
-        if 'price' in data and float(data['price']) <= 0:
-            return Response(
-                {"error": "Price must be greater than zero"}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        serializer = self.get_serializer(thali, data=data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({
-                "message": "Thali updated successfully",
-                "data": serializer.data
-            })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def destroy(self, request, *args, **kwargs):
-        thali = self.get_object()
-        
-        # Check if thali is in any active orders
-        active_orders = thali.cartitem_set.filter(
-            order__order_status__in=['PENDING', 'CONFIRMED', 'PREPARING']
-        ).exists()
-        
-        if active_orders:
-            return Response({
-                "error": "Cannot delete thali with active orders"
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        thali.delete()
-        return Response({
-            "message": "Thali deleted successfully"
-        }, status=status.HTTP_204_NO_CONTENT)
-
 class CartItemViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = CartItemSerializer

@@ -36,10 +36,10 @@ class OwnerViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK
         )
 
-class KitchenViewSet(viewsets.ModelViewSet):
+class KitchenProfileViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated ]
-    serializer_class = KitchenSerializer
-    queryset= Kitchen.objects.all()
+    serializer_class = KitchenProfileSerializer
+    queryset= KitchenProfile.objects.all()
 
     
     def create(self, request, *args, **kwargs):
@@ -47,7 +47,7 @@ class KitchenViewSet(viewsets.ModelViewSet):
         name = request.data.get("name")
         address = request.data.get("address")
 
-        if Kitchen.objects.filter(owner=owner, name=name, address=address).exists():
+        if KitchenProfile.objects.filter(owner=owner, name=name, address=address).exists():
             return Response(
 
                 {"error": "A kitchen with this name and address already exists for this owner."},
@@ -140,7 +140,6 @@ class ToppingViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        # Check for duplicate name
         name = request.data.get('name')
         if Topping.objects.filter(name__iexact=name).exists():
             return Response({
@@ -189,6 +188,70 @@ class ToppingViewSet(viewsets.ModelViewSet):
             'message': 'Topping deleted successfully'
         }, status=status.HTTP_204_NO_CONTENT)
 
-    
 
+from rest_framework import viewsets, status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.core.exceptions import ObjectDoesNotExist
+
+class ThaliViewSet(viewsets.ModelViewSet):
+    queryset = Thali.objects.all()
+    serializer_class = ThaliSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        try:
+            kitchen = request.user.kitchenprofile
+            serializer = self.get_serializer(data=request.data)
+            
+            if serializer.is_valid():
+                serializer.save(kitchen=kitchen)
+                return Response({
+                    'message': 'Thali created successfully',
+                    'data': serializer.data
+                }, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+        except ObjectDoesNotExist:
+            return Response({
+                'error': 'You must have a kitchen profile to create thalis'
+            }, status=status.HTTP_403_FORBIDDEN)
+        except Exception as e:
+            return Response({
+                'error': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+    def update(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            user_kitchen = request.user.kitchenprofile
+            
+            if instance.kitchen != user_kitchen:
+                return Response({
+                    'error': 'You do not have permission to modify this thali'
+                }, status=status.HTTP_403_FORBIDDEN)
+            
+            # ...rest of your update logic...
+
+        except ObjectDoesNotExist:
+            return Response({
+                'error': 'You must have a kitchen profile to modify thalis'
+            }, status=status.HTTP_403_FORBIDDEN)
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            user_kitchen = request.user.kitchenprofile
+            
+            if instance.kitchen != user_kitchen:
+                return Response({
+                    'error': 'You do not have permission to delete this thali'
+                }, status=status.HTTP_403_FORBIDDEN)
+            
+            # ...rest of your destroy logic...
+
+        except ObjectDoesNotExist:
+            return Response({
+                'error': 'You must have a kitchen profile to delete thalis'
+            }, status=status.HTTP_403_FORBIDDEN)
 

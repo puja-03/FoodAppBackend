@@ -2,6 +2,8 @@ from .models import *
 from rest_framework import serializers
 from userapp.auth_serializer import *
 from userapp.auth_serializer import UserSerializer
+from kitchen.serializers import ToppingSerializer,ThaliSerializer 
+
 
 class CustomerSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
@@ -25,29 +27,6 @@ class CustomerSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("pincode should be atmost 6 characters long")
         return value
         
-
-
-
-class ThaliSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Thali
-        fields = ['id', 'name', 'toppings', 'price', 'description', 
-                 'calories', 'estimated_time', 'image', 'created_at', 'updated_at']
-
-    def validate_price(self, value):
-        if value <= 0:
-            raise serializers.ValidationError("Price must be greater than zero.")
-        return value
-
-    def validate_calories(self, value):
-        if value and value < 0:
-            raise serializers.ValidationError("Calories cannot be negative.")
-        return value
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['toppings'] = [{'id': t.id, 'name': t.name} for t in instance.toppings.all()]
-        return representation
 
 class CartItemSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(read_only=True)

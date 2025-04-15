@@ -19,24 +19,24 @@ class Owner(models.Model):
 
     def __str__(self):
         return f"{self.business_name} - {self.user.username}"
-
-class Kitchen(models.Model):
-    owner = models.ForeignKey(Owner, on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
-    description = models.TextField()
-    address = models.TextField()
-    city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100)
-    pincode = models.CharField(max_length=10)
-    logo = models.ImageField(upload_to='kitchens/logos/', null=True, blank=True)
-    cover_image = models.ImageField(upload_to='kitchens/covers/', null=True, blank=True)
-    status = models.CharField(max_length=20, choices=[('active', 'Active'), ('inactive', 'Inactive')])
+    
+class KitchenProfile(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    tag = models.CharField(max_length=50, blank=True, null=True)
+    rating = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)
+    reviews_count = models.PositiveIntegerField(default=0)
+    preparation_time = models.CharField(max_length=20)
+    logo = models.ImageField(upload_to='kitchens/logos/')
+    cover_image = models.ImageField(upload_to='kitchens/covers/')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.name} ({self.owner.business_name})"
-    
+        return self.title
 class Bank(models.Model):
-    kitchen = models.OneToOneField(Kitchen, on_delete=models.PROTECT)
+    kitchen = models.OneToOneField(KitchenProfile, on_delete=models.PROTECT)
     bank_name = models.CharField(max_length=255)
     account_holder_name = models.CharField(max_length=255)
     account_number = models.CharField(max_length=50, unique=True, validators=[validate_account_number])
@@ -53,7 +53,7 @@ class Category(models.Model):
         return self.name
     
 class Menu(models.Model):
-    kitchen = models.ForeignKey(Kitchen, on_delete=models.CASCADE)
+    kitchen = models.ForeignKey(KitchenProfile, on_delete=models.CASCADE)
     item_name = models.CharField(max_length=200)
     Isavailable = models.BooleanField()
     prep_Time = models.TimeField()
@@ -74,6 +74,8 @@ class Topping(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
     image = models.ImageField(upload_to='topping_images/', null=True, blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2) 
+    time = models.CharField(max_length=50, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -89,10 +91,28 @@ class Topping(models.Model):
             old_topping = Topping.objects.filter(pk=self.pk).first()
             if old_topping and old_topping.image != self.image:
                 if old_topping.image and os.path.isfile(old_topping.image.path):
-                    os.remove(old_topping.image.path)
+                        os.remove(old_topping.image.path)
         super(Topping, self).save(*args, **kwargs)
 
 
+
+
+class Thali(models.Model):
+    kitchen = models.ForeignKey(KitchenProfile, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    toppings = models.ManyToManyField(Topping, blank=True)
+    rating = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)
+    preparation_time = models.CharField(max_length=20)
+    image = models.ImageField(upload_to='thalis/')
+    calories = models.PositiveIntegerField(null=True, blank=True)
+    is_available = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
 
 
 

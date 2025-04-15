@@ -5,9 +5,9 @@ from .models import *
 class OwnerAdmin(admin.ModelAdmin):
     list_display = ('business_name', 'address', 'pincode','user', 'city', 'state', 'gst_number', 'profile_image')
 
-@admin.register(Kitchen)
+@admin.register(KitchenProfile)
 class KitchenAdmin(admin.ModelAdmin):
-    list_display = ('name', 'owner','description','address', 'city', 'state','pincode' ,'logo','cover_image','status')
+    list_display = ('user', 'title','tag','rating', 'reviews_count', 'preparation_time','logo','cover_image','is_active')
 
 @admin.register(Bank)
 class BankAdmin(admin.ModelAdmin):
@@ -26,5 +26,5 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Topping)
 class ToppingAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description', 'image', 'created_at', 'updated_at')
+    list_display = ('name', 'description','price' ,'image', 'created_at', 'updated_at')
     
