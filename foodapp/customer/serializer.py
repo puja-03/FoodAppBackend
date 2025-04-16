@@ -30,29 +30,27 @@ class CustomerSerializer(serializers.ModelSerializer):
 
 class CartItemSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(read_only=True)
-    thali = ThaliSerializer(read_only=True)
-    thali_id = serializers.IntegerField(write_only=True)
-    total_price = serializers.DecimalField(
-        max_digits=10, 
-        decimal_places=2, 
-        read_only=True,
-        source='get_total_price'
-    )
-
     class Meta:
         model = CartItem
-        fields = ['id', 'user', 'thali', 'thali_id', 'quantity', 
-                 'total_price', 'created_at', 'updated_at']
+        fields = ['id', 'user', 'thali', 'quantity','created_at', 'updated_at']
 
     def validate_quantity(self, value):
         if value <= 0:
             raise serializers.ValidationError("Quantity must be greater than zero.")
         return value
+    
+    def create(self, validated_data):
+        if 'thali' not in validated_data:
+            raise serializers.ValidationError("Thali is required.")
+        return super().create(validated_data)
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['user'] = UserSerializer(instance.user).data
-        return representation
+
+    # def to_representation(self, instance):
+    #     representation = super().to_representation(instance)
+    #     representation['user'] = UserSerializer(instance.user).data
+    #     representation['thali'] = ThaliSerializer(instance.user).data
+    #     return representation
+
 
 class OrderSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(read_only=True)

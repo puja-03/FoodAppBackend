@@ -205,7 +205,6 @@ class ToppingViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         
-        # Delete the image file if it exists
         if instance.image:
             if os.path.isfile(instance.image.path):
                 os.remove(instance.image.path)
@@ -243,31 +242,15 @@ class ThaliViewSet(viewsets.ModelViewSet):
             }, status=status.HTTP_400_BAD_REQUEST)
         
     def update(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            user_kitchen = request.user.kitchenprofile
-            
-            if instance.kitchen != user_kitchen:
-                return Response({
-                    'error': 'You do not have permission to modify this thali'
-                }, status=status.HTTP_403_FORBIDDEN)
-        
-        except ObjectDoesNotExist:
-            return Response({
-                'error': 'You must have a kitchen profile to modify thalis'
-            }, status=status.HTTP_403_FORBIDDEN)
+        response = super().update(request, *args, **kwargs)
+        return Response(
+            {"message": "Thali updated successfully", "data": response.data},
+            status=status.HTTP_200_OK
+        )
 
     def destroy(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            user_kitchen = request.user.kitchenprofile
-            
-            if instance.kitchen != user_kitchen:
-                return Response({
-                    'error': 'You do not have permission to delete this thali'
-                }, status=status.HTTP_403_FORBIDDEN)
-        except ObjectDoesNotExist:
-            return Response({
-                'error': 'You must have a kitchen profile to delete thalis'
-            }, status=status.HTTP_403_FORBIDDEN)
-
+        super().destroy(request, *args, **kwargs)
+        return Response(
+            {"message": "Thali deleted successfully"},
+            status=status.HTTP_200_OK
+        )

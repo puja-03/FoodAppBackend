@@ -8,20 +8,8 @@ class CustomerAdmin(admin.ModelAdmin):
    
 @admin.register(CartItem)
 class CartItemAdmin(admin.ModelAdmin):
-    list_display = ('id', 'get_user_email', 'get_thali_name', 'quantity', 'get_total_price')
+    list_display = ('id','thali','quantity',)
     readonly_fields = ('created_at', 'updated_at')
-
-    def get_user_email(self, obj):
-        return obj.user.email
-    get_user_email.short_description = 'User Email'
-
-    def get_thali_name(self, obj):
-        return obj.thali.name
-    get_thali_name.short_description = 'Thali Name'
-
-    def get_total_price(self, obj):
-        return f"₹{obj.get_total_price()}"
-    get_total_price.short_description = 'Total Price'
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):

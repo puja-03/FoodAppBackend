@@ -64,10 +64,6 @@ class CartItem(models.Model):
 
     class Meta:
         unique_together = ('user', 'thali')
-        
-    def get_total_price(self):
-        return self.quantity * self.thali.price
-    
 
 class Order(models.Model):
     PAYMENT_CHOICES = (

@@ -30,7 +30,7 @@ class ToppingAdmin(admin.ModelAdmin):
 
 @admin.register(Thali)
 class ThaliAdmin(admin.ModelAdmin):
-    list_display = ('title', 'description', 'price', 'get_toppings', 'preparation_time', 
+    list_display = ('title','kitchen','description', 'price', 'get_toppings', 'preparation_time', 
                    'image', 'is_available', 'created_at', 'updated_at')
     list_filter = ('is_available', 'created_at')
     search_fields = ('title', 'description')

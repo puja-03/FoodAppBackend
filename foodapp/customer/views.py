@@ -88,40 +88,44 @@ class CustomerViewSet(viewsets.ModelViewSet):
 class CartItemViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = CartItemSerializer
-    
-    def create(self, request, *args, **kwargs):
-        data = request.data.copy()
-        serializer = self.get_serializer(data=data)
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def update(self, request, *args, **kwargs):
-        cart_item = self.get_object()
-        if cart_item.user != request.user:
-            return Response(
-                {"error": "Not authorized to update this cart item"}, 
-                status=status.HTTP_403_FORBIDDEN
-            )
-        return super().update(request, *args, **kwargs)
+    queryset = CartItem.objects.all()
 
     def get_queryset(self):
         return CartItem.objects.filter(user=self.request.user)
 
-    def destroy(self, request, *args, **kwargs):
-        cart_item = self.get_object()
-        if cart_item.user != request.user:
-            return Response(
-                {"error": "Not authorized to delete this cart item"}, 
-                status=status.HTTP_403_FORBIDDEN
-            )
-        cart_item.delete()
-        return Response(
-            {"message": "Cart item removed successfully"}, 
-            status=status.HTTP_204_NO_CONTENT
-        )
+    def create(self, request, *args, **kwargs):
+        user = request.user
+        thali_id = request.data.get('thali')
+        quantity = int(request.data.get('quantity', 1))
 
+        existing_item = CartItem.objects.filter(user=user, thali_id=thali_id).first()
+
+        if existing_item:
+            existing_item.quantity += quantity
+            existing_item.save()
+            serializer = CartItemSerializer(existing_item)
+            return Response({
+                'message': 'Cart item quantity updated successfully.',
+                'data': serializer.data
+            }, status=status.HTTP_200_OK)
+        else:
+            serializer = CartItemSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(user=user)
+                return Response({
+                    'message': 'Cart item created successfully.',
+                    'data': serializer.data
+                }, status=status.HTTP_201_CREATED)
+            return Response({
+                'message': 'Invalid data.',
+                'errors': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        return Response({'message': 'Cart item deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
+    
 class OrderViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = OrderSerializer

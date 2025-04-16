@@ -18,8 +18,6 @@ class OwnerSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['user'] = CustomUserSerializer(instance.user).data
         return representation
-
-
 class KitchenProfileSerializer(serializers.ModelSerializer):
     logo = serializers.ImageField(required=False, allow_null=True)
     cover_image = serializers.ImageField(required=False, allow_null=True)
@@ -114,19 +112,19 @@ class ToppingSerializer(serializers.ModelSerializer):
         return value.strip()
 
 class ThaliSerializer(serializers.ModelSerializer):
-    # kitchen = KitchenProfileSerializer(read_only=True)
-    toppings = ToppingSerializer(many=True, read_only=True)
-    topping_ids = serializers.ListField(
-        child=serializers.IntegerField(),
+    kitchen = KitchenProfileSerializer(read_only=True)
+    toppings = serializers.ListField(
+        child=serializers.CharField(),
         write_only=True,
         required=False
     )
+    topping_details = ToppingSerializer(source='toppings', many=True, read_only=True)
 
     class Meta:
         model = Thali
-        fields = ['id','title', 'description', 'price', 
+        fields = ['id','kitchen','title', 'description', 'price', 
                  'preparation_time', 'image', 'calories', 'is_available', 
-                 'toppings', 'topping_ids', 'rating']
+                 'toppings', 'topping_details', 'rating']
         read_only_fields = ['kitchen']
 
     def validate_title(self, value):
@@ -139,28 +137,58 @@ class ThaliSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Price must be greater than 0")
         return value
 
-    def validate_topping_ids(self, value):
-        if value:
-            existing_ids = set(Topping.objects.filter(id__in=value).values_list('id', flat=True))
-            invalid_ids = set(value) - existing_ids
-            if invalid_ids:
-                raise serializers.ValidationError(f"Invalid topping IDs: {invalid_ids}")
-        return value
+    def _get_or_validate_toppings(self, topping_names):
+        topping_objects = []
+        invalid_toppings = []
+
+        for name in topping_names:
+            name = name.strip()
+            toppings = Topping.objects.filter(name__iexact=name)
+            
+            if not toppings.exists():
+                invalid_toppings.append(name)
+            else:
+                # Get the first matching topping
+                topping_objects.append(toppings.first())
+
+        if invalid_toppings:
+            raise serializers.ValidationError(
+                f"Following toppings do not exist: {', '.join(invalid_toppings)}"
+            )
+
+        return topping_objects
 
     def create(self, validated_data):
-        topping_ids = validated_data.pop('topping_ids', [])
+        topping_names = validated_data.pop('toppings', [])
         thali = Thali.objects.create(**validated_data)
-        if topping_ids:
-            thali.toppings.set(topping_ids)
+
+        # Add toppings by name
+        for name in topping_names:
+            try:
+                topping = Topping.objects.get(name__iexact=name.strip())
+                thali.toppings.add(topping)
+            except Topping.DoesNotExist:
+                raise serializers.ValidationError(f"Topping '{name}' does not exist")
+
         return thali
 
     def update(self, instance, validated_data):
-        if 'topping_ids' in validated_data:
-            topping_ids = validated_data.pop('topping_ids')
-            instance.toppings.set(topping_ids)
+        topping_names = validated_data.pop('toppings', None)
         
+        # Update other fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+        
+        # Update toppings if provided
+        if topping_names is not None:
+            instance.toppings.clear()
+            for name in topping_names:
+                try:
+                    topping = Topping.objects.get(name__iexact=name.strip())
+                    instance.toppings.add(topping)
+                except Topping.DoesNotExist:
+                    raise serializers.ValidationError(f"Topping '{name}' does not exist")
+        
         instance.save()
         return instance
 
