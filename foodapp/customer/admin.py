@@ -6,7 +6,6 @@ from .models import *
 class CustomerAdmin(admin.ModelAdmin):
     list_display = ['user', 'address', 'city', 'state', 'pincode', 'profile_image', 'created_at']
    
-
 @admin.register(CartItem)
 class CartItemAdmin(admin.ModelAdmin):
     list_display = ('id', 'get_user_email', 'get_thali_name', 'quantity', 'get_total_price')

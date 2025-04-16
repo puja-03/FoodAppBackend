@@ -8,6 +8,9 @@ from rest_framework.response import Response
 from .models import Topping
 from .serializers import ToppingSerializer
 import os
+from django.core.exceptions import ObjectDoesNotExist
+from rest_framework import permissions
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 # Create your views here.
 class OwnerViewSet(viewsets.ModelViewSet):
@@ -37,38 +40,64 @@ class OwnerViewSet(viewsets.ModelViewSet):
         )
 
 class KitchenProfileViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated ]
+    queryset = KitchenProfile.objects.all()
     serializer_class = KitchenProfileSerializer
-    queryset= KitchenProfile.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
+    http_method_names = ['get', 'post', 'put', 'patch', 'delete']
 
-    
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)
+
     def create(self, request, *args, **kwargs):
-        owner = request.data.get("owner")
-        name = request.data.get("name")
-        address = request.data.get("address")
-
-        if KitchenProfile.objects.filter(owner=owner, name=name, address=address).exists():
+        if KitchenProfile.objects.filter(user=request.user).exists():
             return Response(
-
-                {"error": "A kitchen with this name and address already exists for this owner."},
+                {"detail": "A kitchen profile already exists for this user."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
         return super().create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
-        response = super().update(request, *args, **kwargs)
-        return Response(
-            {"message": "Kitchen updated successfully", "data": response.data},
-            status=status.HTTP_200_OK
-        )
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
 
-    def destroy(self, request, *args, **kwargs):
-        super().destroy(request, *args, **kwargs)
-        return Response(
-            {"message": "Kitchen deleted successfully"},
-            status=status.HTTP_200_OK
+        # Check if user owns this profile
+        if instance.user != request.user:
+            return Response(
+                {"error": "You don't have permission to update this profile"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = self.get_serializer(
+            instance, 
+            data=request.data, 
+            partial=partial
         )
+        
+        if serializer.is_valid():
+            self.perform_update(serializer)
+            return Response({
+                "message": "Kitchen profile updated successfully",
+                "data": serializer.data
+            })
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.user != request.user:
+            return Response(
+                {"error": "You don't have permission to delete this profile"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
+        self.perform_destroy(instance)
+        return Response({
+            "message": "Kitchen profile deleted successfully"
+        }, status=status.HTTP_200_OK)
+
+    def perform_destroy(self, instance):
+        instance.delete()
+
 class BankViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = BankSerializer
@@ -133,7 +162,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(name__icontains=name)  # Case-insensitive search
         return queryset
 
-
 class ToppingViewSet(viewsets.ModelViewSet):
     queryset = Topping.objects.all()
     serializer_class = ToppingSerializer
@@ -159,7 +187,6 @@ class ToppingViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         name = request.data.get('name')
         
-        # Check for duplicate name only if name is being updated
         if name and name.lower() != instance.name.lower():
             if Topping.objects.filter(name__iexact=name).exists():
                 return Response({
@@ -187,12 +214,6 @@ class ToppingViewSet(viewsets.ModelViewSet):
         return Response({
             'message': 'Topping deleted successfully'
         }, status=status.HTTP_204_NO_CONTENT)
-
-
-from rest_framework import viewsets, status
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from django.core.exceptions import ObjectDoesNotExist
 
 class ThaliViewSet(viewsets.ModelViewSet):
     queryset = Thali.objects.all()
@@ -230,9 +251,7 @@ class ThaliViewSet(viewsets.ModelViewSet):
                 return Response({
                     'error': 'You do not have permission to modify this thali'
                 }, status=status.HTTP_403_FORBIDDEN)
-            
-            # ...rest of your update logic...
-
+        
         except ObjectDoesNotExist:
             return Response({
                 'error': 'You must have a kitchen profile to modify thalis'
@@ -247,9 +266,6 @@ class ThaliViewSet(viewsets.ModelViewSet):
                 return Response({
                     'error': 'You do not have permission to delete this thali'
                 }, status=status.HTTP_403_FORBIDDEN)
-            
-            # ...rest of your destroy logic...
-
         except ObjectDoesNotExist:
             return Response({
                 'error': 'You must have a kitchen profile to delete thalis'

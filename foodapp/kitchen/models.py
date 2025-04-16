@@ -27,8 +27,8 @@ class KitchenProfile(models.Model):
     rating = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)
     reviews_count = models.PositiveIntegerField(default=0)
     preparation_time = models.CharField(max_length=20)
-    logo = models.ImageField(upload_to='kitchens/logos/')
-    cover_image = models.ImageField(upload_to='kitchens/covers/')
+    logo = models.ImageField(upload_to='kitchens/logos/',null=True, blank=True)
+    cover_image = models.ImageField(upload_to='kitchens/covers/', null=True, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -86,16 +86,12 @@ class Topping(models.Model):
         ordering = ['name']
 
     def save(self, *args, **kwargs):
-        # Delete old image if it's being updated
         if self.pk:
             old_topping = Topping.objects.filter(pk=self.pk).first()
             if old_topping and old_topping.image != self.image:
                 if old_topping.image and os.path.isfile(old_topping.image.path):
                         os.remove(old_topping.image.path)
         super(Topping, self).save(*args, **kwargs)
-
-
-
 
 class Thali(models.Model):
     kitchen = models.ForeignKey(KitchenProfile, on_delete=models.CASCADE)
@@ -105,7 +101,7 @@ class Thali(models.Model):
     toppings = models.ManyToManyField(Topping, blank=True)
     rating = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)
     preparation_time = models.CharField(max_length=20)
-    image = models.ImageField(upload_to='thalis/')
+    image = models.ImageField(upload_to='thalis/',null=True,blank=True)
     calories = models.PositiveIntegerField(null=True, blank=True)
     is_available = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

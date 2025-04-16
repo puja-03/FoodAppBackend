@@ -21,108 +21,42 @@ class OwnerSerializer(serializers.ModelSerializer):
 
 
 class KitchenProfileSerializer(serializers.ModelSerializer):
-    owner = serializers.PrimaryKeyRelatedField(queryset=Owner.objects.all()) 
+    logo = serializers.ImageField(required=False, allow_null=True)
+    cover_image = serializers.ImageField(required=False, allow_null=True)
+
     class Meta:
         model = KitchenProfile
-        fields = "__all__"
+        fields = [
+            'id', 'title', 'tag', 'rating', 'reviews_count',
+            'preparation_time', 'logo', 'cover_image', 'is_active'
+        ]
+        read_only_fields = ['rating', 'reviews_count']
 
-    # def to_representation(self, instance):class ThaliViewSet(viewsets.ModelViewSet):
-    queryset = Thali.objects.all()  # Add default queryset
-    permission_classes = [IsAuthenticated]
-    # serializer_class = ThaliSerializer
+    def validate_logo(self, value):
+        if value and value.size > 2 * 1024 * 1024:  # 2MB limit
+            raise serializers.ValidationError("Logo file size cannot exceed 2MB")
+        return value
 
-    def get_queryset(self):
-        # Filter thalis for current user and handle search
-        queryset = Thali.objects.filter(user=self.request.user)
-        search = self.request.query_params.get('search', None)
-        if search:
-            queryset = queryset.filter(
-                Q(name__icontains=search) |
-                Q(description__icontains=search)
-            )
-        return queryset
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+    def validate_cover_image(self, value):
+        if value and value.size > 5 * 1024 * 1024:  # 5MB limit
+            raise serializers.ValidationError("Cover image file size cannot exceed 5MB")
+        return value
 
-    def create(self, request, *args, **kwargs):
-        try:
-            price = float(request.data.get('price', 0))
-            if price <= 0:
-                return Response({
-                    'error': 'Price must be greater than 0'
-                }, status=status.HTTP_400_BAD_REQUEST)
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['user'] = CustomUserSerializer(instance.user).data
+        return representation
 
-            serializer = self.get_serializer(data=request.data)
-            if serializer.is_valid():
-                self.perform_create(serializer)
-                return Response({
-                    'message': 'Thali created successfully',
-                    'data': serializer.data
-                }, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            
-        except ValueError:
-            return Response({
-                'error': 'Invalid price format'
-            }, status=status.HTTP_400_BAD_REQUEST)
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        
-        # Check if user owns this thali
-        if instance.user != request.user:
-            return Response({
-                'error': 'You do not have permission to modify this thali'
-            }, status=status.HTTP_403_FORBIDDEN)
+    def create(self, validated_data):
+        user = self.context['request'].user
+        return KitchenProfile.objects.create(user=user, **validated_data)
 
-        # Validate price if provided
-        if 'price' in request.data:
-            try:
-                price = float(request.data['price'])
-                if price <= 0:
-                    return Response({
-                        'error': 'Price must be greater than 0'
-                    }, status=status.HTTP_400_BAD_REQUEST)
-            except ValueError:
-                return Response({
-                    'error': 'Invalid price format'
-                }, status=status.HTTP_400_BAD_REQUEST)
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
 
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({
-                'message': 'Thali updated successfully',
-                'data': serializer.data
-            })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        
-        # Check if user owns this thali
-        if instance.user != request.user:
-            return Response({
-                'error': 'You do not have permission to delete this thali'
-            }, status=status.HTTP_403_FORBIDDEN)
-
-        # Check if thali is in any active orders
-        if instance.cartitem_set.exists():
-            return Response({
-                'error': 'Cannot delete thali that is in active orders'
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        instance.delete()
-        return Response({
-            'message': 'Thali deleted successfully'
-        }, status=status.HTTP_204_NO_CONTENT)
-    #     representation = super().to_representation(instance)
-    #     representation['owner'] = OwnerSerializer(instance.owner).data
-    #     return representation
-    
-    def validate(self, data):
-        if Kitchen.objects.filter(owner=data['owner'], name=data['name'], address=data['address']).exists():
-            raise serializers.ValidationError("A kitchen with this name and address already exists for this owner.")
-        return data
 class BankSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bank
@@ -180,7 +114,7 @@ class ToppingSerializer(serializers.ModelSerializer):
         return value.strip()
 
 class ThaliSerializer(serializers.ModelSerializer):
-    kitchen = KitchenProfileSerializer(read_only=True)
+    # kitchen = KitchenProfileSerializer(read_only=True)
     toppings = ToppingSerializer(many=True, read_only=True)
     topping_ids = serializers.ListField(
         child=serializers.IntegerField(),
@@ -190,7 +124,7 @@ class ThaliSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Thali
-        fields = ['id', 'kitchen', 'title', 'description', 'price', 
+        fields = ['id','title', 'description', 'price', 
                  'preparation_time', 'image', 'calories', 'is_available', 
                  'toppings', 'topping_ids', 'rating']
         read_only_fields = ['kitchen']

@@ -27,4 +27,15 @@ class CategoryAdmin(admin.ModelAdmin):
 @admin.register(Topping)
 class ToppingAdmin(admin.ModelAdmin):
     list_display = ('name', 'description','price' ,'image', 'created_at', 'updated_at')
-    
+
+@admin.register(Thali)
+class ThaliAdmin(admin.ModelAdmin):
+    list_display = ('title', 'description', 'price', 'get_toppings', 'preparation_time', 
+                   'image', 'is_available', 'created_at', 'updated_at')
+    list_filter = ('is_available', 'created_at')
+    search_fields = ('title', 'description')
+    list_editable = ('is_available',)  # Allow quick editing of availability
+
+    def get_toppings(self, obj):
+        return ", ".join([topping.name for topping in obj.toppings.all()])
+    get_toppings.short_description = 'Toppings'
