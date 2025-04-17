@@ -2,6 +2,8 @@ from django.db import models
 from userapp.models import *
 from kitchen.models import *
 import os
+from decimal import Decimal
+
 
 # Create your models here.
 # Customer Model
@@ -53,6 +55,19 @@ class CartItem(models.Model):
 
     class Meta:
         unique_together = ('user', 'thali')
+    
+    def get_total_price(self):
+        """Calculate total price including thali and toppings"""
+        base_price = self.thali.price * self.quantity
+        
+        topping_price = sum(topping.price for topping in self.thali.toppings.all())
+        total_topping_price = topping_price * self.quantity
+        
+        return Decimal(base_price + total_topping_price)
+
+    def __str__(self):
+        return f"{self.user.username}'s cart - {self.thali.title} x {self.quantity}"
+    
 
 class Order(models.Model):
     PAYMENT_CHOICES = (
@@ -68,19 +83,12 @@ class Order(models.Model):
         ('DELIVERED', 'Delivered'),
         ('CANCELLED', 'Cancelled')
     )
-
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='orders')
-    kitchen = models.ForeignKey(KitchenProfile, on_delete=models.CASCADE)
-    cart_items = models.ManyToManyField(CartItem, related_name='order')
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES)
     payment_status = models.BooleanField(default=False)
     order_status = models.CharField(max_length=20, choices=ORDER_STATUS, default='PENDING')
-    delivery_address = models.ForeignKey(
-        Customer, 
-        on_delete=models.CASCADE,
-        related_name='delivery_orders'
-    )
+    delivery_address = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -92,8 +100,22 @@ class Order(models.Model):
 
 class Wishlist(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    cart = models.ForeignKey(CartItem, on_delete=models.CASCADE, null=True, blank=True)
+    thali = models.ManyToManyField(Thali)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Wishlist item for {self.user.email}"
+        return f"{self.user.username}'s wishlist - {self.thali.title}"
+    
+class OrderItem(models.Model):
+    order = models.ForeignKey('Order', on_delete=models.CASCADE, related_name='items')
+    thali = models.ForeignKey(Thali, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def get_total_price(self):
+        return self.price * self.quantity
+
+    def __str__(self):
+        return f"{self.thali.title} x {self.quantity}"

@@ -131,33 +131,43 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
 
     def create(self, request, *args, **kwargs):
+        cart_items = CartItem.objects.filter(user=request.user)
+        if not cart_items.exists():
+            return Response({
+                "error": "Your cart is empty"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        total_price = sum(item.get_total_price() for item in cart_items)
         data = request.data.copy()
+        data['total_amount'] = total_price
+        
         serializer = self.get_serializer(data=data)
         if serializer.is_valid():
-            serializer.save(user=request.user)
+            order = serializer.save(user=request.user)
+            
+            for cart_item in cart_items:
+                OrderItem.objects.create(
+                    order=order,
+                    thali=cart_item.thali,
+                    quantity=cart_item.quantity,
+                    price=cart_item.thali.price
+                )
+                cart_items.delete()
+            
             return Response({
                 "message": "Order placed successfully",
                 "data": serializer.data
             }, status=status.HTTP_201_CREATED)
+            
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
     def update(self, request, *args, **kwargs):
-        order = self.get_object()
-        if order.user != request.user:
-            return Response(
-                {"error": "Not authorized to update this order"}, 
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
-        # Only allow updating certain fields
-        allowed_updates = ['delivery_address']
-        data = {k: v for k, v in request.data.items() if k in allowed_updates}
-        
-        serializer = self.get_serializer(order, data=data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        response = super().update(request, *args, **kwargs)
+        return Response(
+            {"message": "Order updated successfully", "data": response.data},
+            status=status.HTTP_200_OK
+        )
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user)
@@ -186,4 +196,3 @@ class WishlistViewSet(viewsets.ModelViewSet):
     serializer_class = WishlistSerializer
     permission_classes = [IsAuthenticated]
 
-   

@@ -2,8 +2,6 @@ from .models import *
 from rest_framework import serializers
 from userapp.auth_serializer import *
 from userapp.auth_serializer import UserSerializer
-from kitchen.serializers import ToppingSerializer,ThaliSerializer 
-
 
 class CustomerSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
@@ -51,63 +49,61 @@ class CartItemSerializer(serializers.ModelSerializer):
     #     representation['thali'] = ThaliSerializer(instance.user).data
     #     return representation
 
-
 class OrderSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(read_only=True)
-    cart_items = CartItemSerializer(many=True, read_only=True)
-    delivery_address = serializers.CharField(required=True)
-    payment_method = serializers.ChoiceField(choices=Order.PAYMENT_CHOICES, required=True)
-
     class Meta:
         model = Order
-        fields = ['id', 'user', 'cart_items', 'total_price', 'payment_method',
-                 'payment_status', 'order_status', 'delivery_address',
-                 'created_at', 'updated_at']
-        read_only_fields = ['payment_status', 'order_status']
-
-    def validate_total_price(self, value):
-        if value <= 0:
-            raise serializers.ValidationError("Total price must be greater than zero.")
-        return value
-
-    def validate_delivery_address(self, value):
-        if len(value.strip()) < 10:
-            raise serializers.ValidationError("Delivery address must be at least 10 characters long.")
-        return value
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['user'] = UserSerializer(instance.user).data
-        representation['cart_items'] = CartItemSerializer(instance.cart_items, many=True).data
-        representation['delivery_address'] = CustomerSerializer(instance.delivery_address).data
-        return representation
-
+        fields = ['id', 'user', 'total_price','delivery_address', 
+                 'order_status', 'payment_method', 'created_at']
+        read_only_fields = ['user', 'total_price', 'order_status']
+    
     def create(self, validated_data):
         user = self.context['request'].user
         cart_items = CartItem.objects.filter(user=user)
-        if not cart_items.exists():
-            raise serializers.ValidationError("Cart is empty")
         
+        if not cart_items.exists():
+            raise serializers.ValidationError({"error": "Cart is empty"})
+
+        # Calculate total price from cart items including toppings
         total_price = sum(item.get_total_price() for item in cart_items)
+
+        # Create order
         order = Order.objects.create(
             user=user,
+            delivery_address=validated_data.get('delivery_address'),
+            payment_method=validated_data.get('payment_method'),
             total_price=total_price,
-            **validated_data
+            order_status='PENDING'
         )
-        order.cart_items.set(cart_items)
+
+        # Create order items
+        for cart_item in cart_items:
+            OrderItem.objects.create(
+                order=order,
+                thali=cart_item.thali,
+                quantity=cart_item.quantity,
+                price=cart_item.get_total_price()
+            )
+
+        # Clear cart
+        cart_items.delete()
+
         return order
-        
-class WishlistSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(read_only=True)
-    cart = CartItemSerializer(read_only=True)
-
-    class Meta:
-        model = Wishlist
-        fields = ['id', 'user', 'cart', 'created_at']
-        read_only_fields = ['created_at']
-
+    
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['user'] = UserSerializer(instance.user).data
-        representation['cart'] = CartItemSerializer(instance.cart).data
         return representation
+
+class WishlistSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+    thali = serializers.PrimaryKeyRelatedField(many=True, queryset=Thali.objects.all())
+    class Meta:
+        model = Wishlist
+        fields = ['id','user' 'thali', 'created_at']
+        read_only_fields = ['created_at']
+
+    
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ['id', 'thali', 'quantity', 'price']
