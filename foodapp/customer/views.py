@@ -180,3 +180,10 @@ class OrderViewSet(viewsets.ModelViewSet):
             {"message": "Order cancelled successfully"}, 
             status=status.HTTP_200_OK
         )
+    
+class WishlistViewSet(viewsets.ModelViewSet):
+    queryset = Wishlist.objects.all()
+    serializer_class = WishlistSerializer
+    permission_classes = [IsAuthenticated]
+
+   

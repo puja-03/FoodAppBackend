@@ -12,8 +12,7 @@ router = routers.DefaultRouter()
 router.register('profile', CustomerViewSet)
 router.register(r'cart', CartItemViewSet, basename='cart')
 router.register(r'orders', OrderViewSet, basename='order')
-# router.register(r'order-items', OrderItemViewSet, basename='order-item')
-# router.register(r'Wishlist'), WishlistViewSet, basename='wishlist')
+router.register(r'wishlist', WishlistViewSet, basename='wishlist')
 
 
 urlpatterns = [

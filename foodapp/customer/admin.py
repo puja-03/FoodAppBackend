@@ -49,13 +49,3 @@ class OrderAdmin(admin.ModelAdmin):
         })
     )
 
-
-@admin.register(Wishlist)
-class WishlistAdmin(admin.ModelAdmin):
-    list_display = ('user', 'get_thali_name', 'created_at')
-    readonly_fields = ('created_at',)
-
-    def get_thali_name(self, obj):
-        return obj.thali.name
-    get_thali_name.short_description = 'Thali Name'
-

@@ -78,6 +78,8 @@ class OrderSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['user'] = UserSerializer(instance.user).data
+        representation['cart_items'] = CartItemSerializer(instance.cart_items, many=True).data
+        representation['delivery_address'] = CustomerSerializer(instance.delivery_address).data
         return representation
 
     def create(self, validated_data):
@@ -95,3 +97,17 @@ class OrderSerializer(serializers.ModelSerializer):
         order.cart_items.set(cart_items)
         return order
         
+class WishlistSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+    cart = CartItemSerializer(read_only=True)
+
+    class Meta:
+        model = Wishlist
+        fields = ['id', 'user', 'cart', 'created_at']
+        read_only_fields = ['created_at']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['user'] = UserSerializer(instance.user).data
+        representation['cart'] = CartItemSerializer(instance.cart).data
+        return representation

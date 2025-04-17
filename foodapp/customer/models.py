@@ -44,17 +44,6 @@ class Customer(models.Model):
 #     def __str__(self):
 #         return f"Order {self.id} - {self.customer.user.username}"
 
-# # Order itemn Model
-# class OrderItem(models.Model):
-#     order = models.ForeignKey(CustomerOrder, on_delete=models.CASCADE, related_name="order_items")
-#     # food_item = models.ForeignKey(FoodItem, on_delete=models.CASCADE)
-#     quantity = models.IntegerField()
-#     price = models.DecimalField(max_digits=10, decimal_places=2)
-
-#     def __str__(self):
-#         return f"{self.quantity}x {self.food_item.name} in Order {self.order.id}"
-# cart model
-
 class CartItem(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     thali = models.ForeignKey(Thali, on_delete=models.CASCADE)
@@ -103,11 +92,8 @@ class Order(models.Model):
 
 class Wishlist(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    thali = models.ForeignKey(Thali, on_delete=models.CASCADE)
+    cart = models.ForeignKey(CartItem, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ['user', 'thali']
 
     def __str__(self):
         return f"Wishlist item for {self.user.email}"
