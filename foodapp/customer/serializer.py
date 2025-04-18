@@ -2,6 +2,8 @@ from .models import *
 from rest_framework import serializers
 from userapp.auth_serializer import *
 from userapp.auth_serializer import UserSerializer
+from kitchen.serializers import ThaliSerializer
+
 
 class CustomerSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
@@ -74,7 +76,6 @@ class OrderSerializer(serializers.ModelSerializer):
             total_price=total_price,
             order_status='PENDING'
         )
-
         # Create order items
         for cart_item in cart_items:
             OrderItem.objects.create(
@@ -95,13 +96,17 @@ class OrderSerializer(serializers.ModelSerializer):
         return representation
 
 class WishlistSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(read_only=True)
-    thali = serializers.PrimaryKeyRelatedField(many=True, queryset=Thali.objects.all())
+
     class Meta:
         model = Wishlist
-        fields = ['id','user' 'thali', 'created_at']
-        read_only_fields = ['created_at']
+        fields = ['id', 'thali', 'created_at']
+        read_only_fields = ['user']
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['user'] = UserSerializer(instance.user).data
+        representation['thali'] = ThaliSerializer(instance.thali, many=True).data
+        return representation
     
 class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:

@@ -4,9 +4,6 @@ from kitchen.models import *
 import os
 from decimal import Decimal
 
-
-# Create your models here.
-# Customer Model
 class Customer(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     address = models.TextField(null=True, blank=True)
@@ -104,7 +101,7 @@ class Wishlist(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.username}'s wishlist - {self.thali.title}"
+        return f"{self.user.username}'s wishlist"
     
 class OrderItem(models.Model):
     order = models.ForeignKey('Order', on_delete=models.CASCADE, related_name='items')

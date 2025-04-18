@@ -155,14 +155,12 @@ class ThaliSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 f"Following toppings do not exist: {', '.join(invalid_toppings)}"
             )
-
         return topping_objects
 
     def create(self, validated_data):
         topping_names = validated_data.pop('toppings', [])
         thali = Thali.objects.create(**validated_data)
-
-        # Add toppings by name
+       # toppping add by name
         for name in topping_names:
             try:
                 topping = Topping.objects.get(name__iexact=name.strip())
