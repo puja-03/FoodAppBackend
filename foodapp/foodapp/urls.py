@@ -1,4 +1,3 @@
-
 from django.contrib import admin
 from django.urls import path, include
 from foodapp.views import *
@@ -12,4 +11,5 @@ urlpatterns = [
     path('api/Delivery_panel/', include('Delivery_panel.urls')),
     path('api/user/', include('userapp.urls')),
     path('api/customer/', include('customer.urls')),
+    path('razorpay/', include('customer.api.urls')),
 ]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

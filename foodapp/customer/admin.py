@@ -31,3 +31,8 @@ class OrderItemAdmin(admin.ModelAdmin):
 # @admin.register(Wishlist)
 # class WishlistAdmin(admin.ModelAdmin):
 #     list_display = ('id', 'user', 'thali')
+
+@admin.register(Transaction)
+class TransactionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'payment_id', 'order_id', 'signature', 'amount')
+    readonly_fields = ('created_at', 'updated_at')
