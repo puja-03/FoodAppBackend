@@ -119,10 +119,10 @@ class OrderItem(models.Model):
     
 class Transaction(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    payment_id = models.CharField(max_length=255)
-    order_id = models.CharField(max_length=255)
-    signature = models.CharField(max_length=255, null=True, blank=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_id = models.CharField(max_length=255,verbose_name="Payment ID")
+    order_id = models.CharField(max_length=255,verbose_name="Order ID")
+    signature = models.CharField(max_length=255, null=True, blank=True,verbose_name="Signature")
+    amount = models.DecimalField(max_digits=10, decimal_places=2,verbose_name="Amount")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

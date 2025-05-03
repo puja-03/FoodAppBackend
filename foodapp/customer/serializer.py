@@ -112,3 +112,4 @@ class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
         fields = ['id', 'thali', 'quantity', 'price']
+
