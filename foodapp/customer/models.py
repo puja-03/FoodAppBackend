@@ -23,25 +23,6 @@ class Customer(models.Model):
                 if old_image.profile_image and os.path.isfile(old_image.profile_image.path):
                     os.remove(old_image.profile_image.path)
         super(Customer, self).save(*args, **kwargs)
-    
-# Customer Order Model
-# class CustomerOrder(models.Model):
-#     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="orders")
-#     kitchen = models.ForeignKey(Kitchen, on_delete=models.CASCADE, related_name="orders")
-#     # delivery_boy = models.ForeignKey(DeliveryBoy, on_delete=models.SET_NULL, null=True, blank=True, related_name="orders")
-#     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
-#     status = models.CharField(max_length=50, choices=[
-#         ('pending', 'Pending'),
-#         ('accepted', 'Accepted'),
-#         ('preparing', 'Preparing'),
-#         ('out_for_delivery', 'Out for Delivery'), 
-#         ('delivered', 'Delivered'),
-#         ('cancelled', 'Cancelled')
-#     ])
-#     payment_status = models.CharField(max_length=50, choices=[('pending', 'Pending'), ('paid', 'Paid'), ('failed', 'Failed')])
-
-#     def __str__(self):
-#         return f"Order {self.id} - {self.customer.user.username}"
 
 class CartItem(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)

@@ -5,8 +5,6 @@ from kitchen.serializers import *
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .models import Topping
-from .serializers import ToppingSerializer
 import os
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import permissions
@@ -115,20 +113,6 @@ class BankViewSet(viewsets.ModelViewSet):
             {"message": "Bank details updated successfully", "data": response.data},
             status=status.HTTP_200_OK
         )
-    
-class MenuViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
-    serializer_class = MenuSerializer
-    queryset = Menu.objects.all()
-
-    def get_queryset(self):
-        queryset = Menu.objects.all()
-        category_id = self.request.query_params.get('category', None)
-        
-        if category_id:
-            queryset = queryset.filter(category_id=category_id)  # Filtering by category ID
-            
-        return queryset
 
 class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
@@ -161,96 +145,152 @@ class CategoryViewSet(viewsets.ModelViewSet):
         if name:
             queryset = queryset.filter(name__icontains=name)  # Case-insensitive search
         return queryset
+    
+# class MenuViewSet(viewsets.ModelViewSet):
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = MenuSerializer
+#     queryset = Menu.objects.all()
 
-class ToppingViewSet(viewsets.ModelViewSet):
-    queryset = Topping.objects.all()
-    serializer_class = ToppingSerializer
+#     def get_queryset(self):
+#         queryset = Menu.objects.all()
+#         category_id = self.request.query_params.get('category', None)
+        
+#         if category_id:
+#             queryset = queryset.filter(category_id=category_id)  # Filtering by category ID
+            
+#         return queryset
+# class ToppingViewSet(viewsets.ModelViewSet):
+#     queryset = Topping.objects.all()
+#     serializer_class = ToppingSerializer
+#     permission_classes = [IsAuthenticated]
+
+#     def create(self, request, *args, **kwargs):
+#         name = request.data.get('name')
+#         if Topping.objects.filter(name__iexact=name).exists():
+#             return Response({
+#                 'error': 'A topping with this name already exists'
+#             }, status=status.HTTP_400_BAD_REQUEST)
+
+#         serializer = self.get_serializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response({
+#                 'message': 'Topping created successfully',
+#                 'data': serializer.data
+#             }, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#     def update(self, request, *args, **kwargs):
+#         instance = self.get_object()
+#         name = request.data.get('name')
+        
+#         if name and name.lower() != instance.name.lower():
+#             if Topping.objects.filter(name__iexact=name).exists():
+#                 return Response({
+#                     'error': 'A topping with this name already exists'
+#                 }, status=status.HTTP_400_BAD_REQUEST)
+
+#         serializer = self.get_serializer(instance, data=request.data, partial=True)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response({
+#                 'message': 'Topping updated successfully',
+#                 'data': serializer.data
+#             })
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#     def destroy(self, request, *args, **kwargs):
+#         instance = self.get_object()
+        
+#         if instance.image:
+#             if os.path.isfile(instance.image.path):
+#                 os.remove(instance.image.path)
+                
+#         instance.delete()
+#         return Response({
+#             'message': 'Topping deleted successfully'
+#         }, status=status.HTTP_204_NO_CONTENT)
+
+# class ThaliViewSet(viewsets.ModelViewSet):
+#     queryset = Thali.objects.all()
+#     serializer_class = ThaliSerializer
+#     permission_classes = [IsAuthenticated]
+
+#     def create(self, request, *args, **kwargs):
+#         try:
+#             kitchen = request.user.kitchenprofile
+#             serializer = self.get_serializer(data=request.data)
+            
+#             if serializer.is_valid():
+#                 serializer.save(kitchen=kitchen)
+#                 return Response({
+#                     'message': 'Thali created successfully',
+#                     'data': serializer.data
+#                 }, status=status.HTTP_201_CREATED)
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+#         except ObjectDoesNotExist:
+#             return Response({
+#                 'error': 'You must have a kitchen profile to create thalis'
+#             }, status=status.HTTP_403_FORBIDDEN)
+#         except Exception as e:
+#             return Response({
+#                 'error': str(e)
+#             }, status=status.HTTP_400_BAD_REQUEST)
+        
+#     def update(self, request, *args, **kwargs):
+#         response = super().update(request, *args, **kwargs)
+#         return Response(
+#             {"message": "Thali updated successfully", "data": response.data},
+#             status=status.HTTP_200_OK
+#         )
+
+#     def destroy(self, request, *args, **kwargs):
+#         super().destroy(request, *args, **kwargs)
+#         return Response(
+#             {"message": "Thali deleted successfully"},
+#             status=status.HTTP_200_OK
+#         )
+class OfferViewSet(viewsets.ModelViewSet):
+    queryset = Offer.objects.all()
+    serializer_class = OfferSerializer
     permission_classes = [IsAuthenticated]
 
-    def create(self, request, *args, **kwargs):
-        name = request.data.get('name')
-        if Topping.objects.filter(name__iexact=name).exists():
-            return Response({
-                'error': 'A topping with this name already exists'
-            }, status=status.HTTP_400_BAD_REQUEST)
+    def get_queryset(self):
+        kitchen_id = self.request.query_params.get('kitchen_id')
+        if kitchen_id:
+            return self.queryset.filter(kitchen_id=kitchen_id)
+        return self.queryset
 
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({
-                'message': 'Topping created successfully',
-                'data': serializer.data
-            }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class SubItemViewSet(viewsets.ModelViewSet):
+    queryset = SubItem.objects.all()
+    serializer_class = SubItemSerializer
+    permission_classes = [IsAuthenticated]
 
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        name = request.data.get('name')
-        
-        if name and name.lower() != instance.name.lower():
-            if Topping.objects.filter(name__iexact=name).exists():
-                return Response({
-                    'error': 'A topping with this name already exists'
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({
-                'message': 'Topping updated successfully',
-                'data': serializer.data
-            })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        
-        if instance.image:
-            if os.path.isfile(instance.image.path):
-                os.remove(instance.image.path)
-                
-        instance.delete()
-        return Response({
-            'message': 'Topping deleted successfully'
-        }, status=status.HTTP_204_NO_CONTENT)
-
+    def get_queryset(self):
+        thali_id = self.request.query_params.get('thali_id')
+        if thali_id:
+            return self.queryset.filter(thali_id=thali_id)
+        return self.queryset
 class ThaliViewSet(viewsets.ModelViewSet):
     queryset = Thali.objects.all()
     serializer_class = ThaliSerializer
     permission_classes = [IsAuthenticated]
 
-    def create(self, request, *args, **kwargs):
-        try:
-            kitchen = request.user.kitchenprofile
-            serializer = self.get_serializer(data=request.data)
-            
-            if serializer.is_valid():
-                serializer.save(kitchen=kitchen)
-                return Response({
-                    'message': 'Thali created successfully',
-                    'data': serializer.data
-                }, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            
-        except ObjectDoesNotExist:
-            return Response({
-                'error': 'You must have a kitchen profile to create thalis'
-            }, status=status.HTTP_403_FORBIDDEN)
-        except Exception as e:
-            return Response({
-                'error': str(e)
-            }, status=status.HTTP_400_BAD_REQUEST)
-        
-    def update(self, request, *args, **kwargs):
-        response = super().update(request, *args, **kwargs)
-        return Response(
-            {"message": "Thali updated successfully", "data": response.data},
-            status=status.HTTP_200_OK
-        )
+    def get_queryset(self):
+        kitchen_id = self.request.query_params.get('kitchen_id')
+        category_id = self.request.query_params.get('category_id')
+        type_filter = self.request.query_params.get('type')
+        special = self.request.query_params.get('special')
 
-    def destroy(self, request, *args, **kwargs):
-        super().destroy(request, *args, **kwargs)
-        return Response(
-            {"message": "Thali deleted successfully"},
-            status=status.HTTP_200_OK
-        )
+        queryset = self.queryset
+        if kitchen_id:
+            queryset = queryset.filter(kitchen_id=kitchen_id)
+        if category_id:
+            queryset = queryset.filter(categories__id=category_id)
+        if type_filter:
+            queryset = queryset.filter(type=type_filter)
+        if special is not None:
+            queryset = queryset.filter(special=special.lower() == 'true')
+
+        return queryset
