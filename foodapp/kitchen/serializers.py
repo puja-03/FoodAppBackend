@@ -19,9 +19,6 @@ class OwnerSerializer(serializers.ModelSerializer):
         representation['user'] = CustomUserSerializer(instance.user).data
         return representation
 class KitchenProfileSerializer(serializers.ModelSerializer):
-    logo = serializers.ImageField(required=False, allow_null=True)
-    cover_image = serializers.ImageField(required=False, allow_null=True)
-
     class Meta:
         model = KitchenProfile
         fields = [
@@ -202,8 +199,9 @@ class SubItemSerializer(serializers.ModelSerializer):
 class OfferSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offer
-        fields = ['id', 'title', 'code', 'created_at', 'updated_at']
+        fields = ['id','kitchen', 'title', 'code', 'created_at', 'updated_at']
 
+    
 class ThaliSerializer(serializers.ModelSerializer):
     main_courses = SubItemSerializer(many=True)
     starters = SubItemSerializer(many=True)

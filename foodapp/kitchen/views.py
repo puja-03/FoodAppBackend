@@ -1,14 +1,11 @@
-from django.shortcuts import render
 from rest_framework import viewsets ,status
 from kitchen.models import * 
 from kitchen.serializers import *
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-import os
-from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import permissions
-from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from django.shortcuts import get_object_or_404
 
 # Create your views here.
 class OwnerViewSet(viewsets.ModelViewSet):
@@ -41,8 +38,6 @@ class KitchenProfileViewSet(viewsets.ModelViewSet):
     queryset = KitchenProfile.objects.all()
     serializer_class = KitchenProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
-    parser_classes = (MultiPartParser, FormParser, JSONParser)
-    http_method_names = ['get', 'post', 'put', 'patch', 'delete']
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)
@@ -139,12 +134,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
             {"message": "Category deleted successfully"},
             status=status.HTTP_200_OK
         )
-    def get_queryset(self):
-        queryset = Category.objects.all()
-        name = self.request.query_params.get('name', None)
-        if name:
-            queryset = queryset.filter(name__icontains=name)  # Case-insensitive search
-        return queryset
+
     
 # class MenuViewSet(viewsets.ModelViewSet):
 #     permission_classes = [IsAuthenticated]
@@ -252,26 +242,59 @@ class CategoryViewSet(viewsets.ModelViewSet):
 #             status=status.HTTP_200_OK
 #         )
 class OfferViewSet(viewsets.ModelViewSet):
-    queryset = Offer.objects.all()
     serializer_class = OfferSerializer
+    queryset = Offer.objects.all()
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        kitchen_id = self.request.query_params.get('kitchen_id')
-        if kitchen_id:
-            return self.queryset.filter(kitchen_id=kitchen_id)
-        return self.queryset
+    def perform_create(self, serializer):
+        kitchen = get_object_or_404(KitchenProfile, user=self.request.user)
+        serializer.save(kitchen=kitchen)
 
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        return Response(
+            {"message": "Offer updated successfully", "data": response.data},
+            status=status.HTTP_200_OK
+        )
+
+    def destroy(self, request, *args, **kwargs):
+        super().destroy(request, *args, **kwargs)
+        return Response(
+            {"message": "Offer deleted successfully"},
+            status=status.HTTP_200_OK)
 class SubItemViewSet(viewsets.ModelViewSet):
     queryset = SubItem.objects.all()
     serializer_class = SubItemSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        thali_id = self.request.query_params.get('thali_id')
-        if thali_id:
-            return self.queryset.filter(thali_id=thali_id)
-        return self.queryset
+    # def get_queryset(self):
+    #     thali_id = self.request.query_params.get('thali_id')
+    #     if thali_id:
+    #         return self.queryset.filter(thali_id=thali_id)
+    #     return self.queryset
+    
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        return Response(
+            {"message": "Subitem created successfully", "data": response.data},
+            status=status.HTTP_201_CREATED
+        )
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        return Response(
+            {"message": "Subitem updated successfully", "data": response.data},
+            status=status.HTTP_200_OK
+        )
+
+    def destroy(self, request, *args, **kwargs):
+        super().destroy(request, *args, **kwargs)
+        return Response(
+            {"message": "Subitem deleted successfully"},
+            status=status.HTTP_200_OK
+        )
+    
 class ThaliViewSet(viewsets.ModelViewSet):
     queryset = Thali.objects.all()
     serializer_class = ThaliSerializer

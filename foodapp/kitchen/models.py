@@ -84,7 +84,7 @@ class Category(models.Model):
 #     class Meta:
 #         ordering = ['name']
 
-#     def save(self, *args, **kwargs):http://127.0.0.1:8000/api/kitchen/kitchenprofile/
+#     def save(self, *args, **kwargs):
 #         if self.pk:
 #             old_topping = Topping.objects.filter(pk=self.pk).first()
 #             if old_topping and old_topping.image != self.image:
@@ -115,6 +115,14 @@ class SubItem(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.subitem_type})"
+    
+    def save(self, *args, **kwargs):
+        if self.pk:
+            old_image = SubItem.objects.filter(pk=self.pk).first()
+            if old_image and old_image.image != self.image:
+                if old_image.image and os.path.isfile(old_image.image.path):
+                        os.remove(old_image.image.path)
+        super(SubItem, self).save(*args, **kwargs)
 
 class Thali(models.Model):
     kitchen = models.ForeignKey(KitchenProfile, on_delete=models.CASCADE)
@@ -137,7 +145,4 @@ class Thali(models.Model):
 
     def __str__(self):
         return self.title
-
-
-
 
