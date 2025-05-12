@@ -134,8 +134,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
             {"message": "Category deleted successfully"},
             status=status.HTTP_200_OK
         )
-
-    
+  
 # class MenuViewSet(viewsets.ModelViewSet):
 #     permission_classes = [IsAuthenticated]
 #     serializer_class = MenuSerializer
@@ -149,6 +148,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 #             queryset = queryset.filter(category_id=category_id)  # Filtering by category ID
             
 #         return queryset
+
 # class ToppingViewSet(viewsets.ModelViewSet):
 #     queryset = Topping.objects.all()
 #     serializer_class = ToppingSerializer
@@ -267,12 +267,6 @@ class SubItemViewSet(viewsets.ModelViewSet):
     queryset = SubItem.objects.all()
     serializer_class = SubItemSerializer
     permission_classes = [IsAuthenticated]
-
-    # def get_queryset(self):
-    #     thali_id = self.request.query_params.get('thali_id')
-    #     if thali_id:
-    #         return self.queryset.filter(thali_id=thali_id)
-    #     return self.queryset
     
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
@@ -300,20 +294,41 @@ class ThaliViewSet(viewsets.ModelViewSet):
     serializer_class = ThaliSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        kitchen_id = self.request.query_params.get('kitchen_id')
-        category_id = self.request.query_params.get('category_id')
-        type_filter = self.request.query_params.get('type')
-        special = self.request.query_params.get('special')
+    # def get_queryset(self):
+    #     kitchen_id = self.request.query_params.get('kitchen_id')
+    #     category_id = self.request.query_params.get('category_id')
+    #     type_filter = self.request.query_params.get('type')
+    #     special = self.request.query_params.get('special')
 
-        queryset = self.queryset
-        if kitchen_id:
-            queryset = queryset.filter(kitchen_id=kitchen_id)
-        if category_id:
-            queryset = queryset.filter(categories__id=category_id)
-        if type_filter:
-            queryset = queryset.filter(type=type_filter)
-        if special is not None:
-            queryset = queryset.filter(special=special.lower() == 'true')
+    #     queryset = self.queryset
+    #     if kitchen_id:
+    #         queryset = queryset.filter(kitchen_id=kitchen_id)
+    #     if category_id:
+    #         queryset = queryset.filter(categories__id=category_id)
+    #     if type_filter:
+    #         queryset = queryset.filter(type=type_filter)
+    #     if special is not None:
+    #         queryset = queryset.filter(special=special.lower() == 'true')
 
-        return queryset
+    #     return queryset
+    
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        return Response(
+            {"message": "Thali created successfully", "data": response.data},
+            status=status.HTTP_201_CREATED
+        )
+    
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        return Response(
+            {"message": "Thali updated successfully", "data": response.data},
+            status=status.HTTP_200_OK
+        )
+    
+    def destroy(self, request, *args, **kwargs):
+        super().destroy(request, *args, **kwargs)
+        return Response(
+            {"message": "Thali deleted successfully"},
+            status=status.HTTP_200_OK
+        )

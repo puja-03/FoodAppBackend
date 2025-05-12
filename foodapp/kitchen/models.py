@@ -45,7 +45,7 @@ class Bank(models.Model):
 
     def __str__(self):
         return f"Bank Details of {self.kitchen.name}"
-    
+   
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
 
@@ -103,15 +103,10 @@ class Offer(models.Model):
         return f"{self.title} ({self.kitchen.title})"
 
 class SubItem(models.Model):
-    SUBITEM_TYPES = (
-        ('mainCourse', 'Main Course'),
-        ('starter', 'Starter'),
-        ('dessert', 'Dessert'),
-    )
     title = models.CharField(max_length=255)
     cost = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.ImageField(upload_to='kitchens/subitem_image/', blank=True, null=True)
-    subitem_type = models.CharField(max_length=20, choices=SUBITEM_TYPES)
+    subitem_type = models.ForeignKey(Category,on_delete=models.CASCADE, related_name='thalis')
 
     def __str__(self):
         return f"{self.title} ({self.subitem_type})"
@@ -132,13 +127,12 @@ class Thali(models.Model):
     rating = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)
     preparation_time = models.CharField(max_length=20)
     image = models.ImageField(upload_to='kitchens/thali_image/', blank=True, null=True)
-    type = models.CharField(max_length=20, choices=(('veg', 'Vegetarian'), ('non-veg', 'Non-Vegetarian')))
+    type = models.CharField(max_length=50, choices=[('veg', 'Veg'), ('non-veg', 'Non-Veg')])
     special = models.BooleanField(default=False)
     thali_offer = models.CharField(max_length=255, blank=True, null=True)
     main_courses = models.ManyToManyField(SubItem, related_name='thali_main_courses', limit_choices_to={'subitem_type': 'mainCourse'})
     starters = models.ManyToManyField(SubItem, related_name='thali_starters', limit_choices_to={'subitem_type': 'starter'})
     desserts = models.ManyToManyField(SubItem, related_name='thali_desserts', limit_choices_to={'subitem_type': 'dessert'})
-    categories = models.ManyToManyField(Category, related_name='thalis')
     is_available = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

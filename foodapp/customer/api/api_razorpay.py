@@ -97,10 +97,8 @@ class RazorpayClient:
             
             print(f"Verifying payment with order_id: {razorpay_order_id}")
             
-            # Verify using Razorpay utility
             self.client.utility.verify_payment_signature(params_dict)
             
-            # If verification successful, verify payment status
             payment = self.client.payment.fetch(razorpay_payment_id)
             if payment['status'] != 'captured':
                 raise ValidationError({
@@ -116,7 +114,6 @@ class RazorpayClient:
                 "message": f"Payment verification failed: {str(e)}"
             })
 
-# Update your TransactionAPIView to use the method correctly:
 class TransactionAPIView(APIView):
     def post(self, request):
         serializer = TransactionSerializer(data=request.data)
@@ -124,14 +121,13 @@ class TransactionAPIView(APIView):
             try:
                 rz_client = RazorpayClient()
                 
-                # Call verify_payment with all required parameters
                 rz_client.verify_payment(
                     razorpay_order_id=request.data.get('razorpay_order_id'),
                     razorpay_payment_id=request.data.get('razorpay_payment_id'),
                     razorpay_signature=request.data.get('razorpay_signature')
                 )
 
-                # Create transaction after verification
+                # Create trnsaction after verification
                 transaction = serializer.save(user=request.user)
                 
                 return Response({

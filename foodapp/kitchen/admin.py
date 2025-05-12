@@ -31,20 +31,14 @@ class OfferAdmin(admin.ModelAdmin):
 
 @admin.register(SubItem)
 class SubItemAdmin(admin.ModelAdmin):
-    list_display = ('title', 'cost','subitem_type', 'image')
+    list_display = ('title', 'cost', 'get_subitem_types', 'image')
+
+    def get_subitem_types(self, obj):
+        return ", ".join([cat.name for cat in obj.subitem_type.all()])
+    get_subitem_types.short_description = 'Types'
 
 @admin.register(Thali)  
 class ThaliAdmin(admin.ModelAdmin):
     list_display = ('kitchen', 'title', 'description', 'price', 'rating', 'preparation_time', 
-                   'image', 'type', 'special', 'thali_offer', 'is_available', 
-                   'created_at', 'updated_at')
-    
-# @admin.register(Thali)
-# class ThaliAdmin(admin.ModelAdmin):
-#     list_display = ('title','kitchen','description', 'price', 'get_toppings', 'preparation_time', 
-#                    'image', 'is_available', 'created_at', 'updated_at')
-
-#     def get_toppings(self, obj):
-#         return ", ".join([topping.name for topping in obj.toppings.all()])
-#     get_toppings.short_description = 'Toppings'
+    'image', 'special', 'thali_offer', 'is_available', 'created_at', 'updated_at')
 

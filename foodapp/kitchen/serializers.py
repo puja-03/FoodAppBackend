@@ -203,17 +203,16 @@ class OfferSerializer(serializers.ModelSerializer):
 
     
 class ThaliSerializer(serializers.ModelSerializer):
-    main_courses = SubItemSerializer(many=True)
-    starters = SubItemSerializer(many=True)
-    desserts = SubItemSerializer(many=True)
-    categories = CategorySerializer(many=True)
-    kitchen = serializers.StringRelatedField()
-
     class Meta:
         model = Thali
         fields = [
             'id', 'kitchen', 'title', 'description', 'price', 'rating',
-            'preparation_time', 'image', 'type', 'special', 'thali_offer',
-            'main_courses', 'starters', 'desserts', 'categories',
-            'is_available', 'created_at', 'updated_at'
+            'preparation_time', 'image','special', 'thali_offer',
+            'main_courses', 'starters', 'desserts','is_available', 'created_at', 'updated_at'
         ]
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['subitem'] = SubItemSerializer(instance.subitem).data
+        return representation
+   
